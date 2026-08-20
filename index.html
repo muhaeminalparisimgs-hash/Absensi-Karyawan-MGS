@@ -326,7 +326,6 @@
         // CEK STATUS AUTHENTICATION LOGIN
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Ambil data detail role user dari Firestore
                 const doc = await db.collection("users").doc(user.uid).get();
                 if (doc.exists) {
                     currentUserData = doc.data();
@@ -543,21 +542,21 @@
             const stamp1 = document.getElementById('stamp_s1');
             if(st1 === 'approved') {
                 stamp1.classList.remove('hidden'); stamp1.classList.add('flex');
-                document.getElementById('pdf_s1_date').innerText = data.date_spv1.split(" ")[0]; 
+                document.getElementById('pdf_s1_date').innerText = data.date_spv1 ? data.date_spv1.split(" ")[0] : ''; 
                 generateQR("qrcode_s1", `ACC1|${data.app_spv1}|${data.date_spv1}`);
             } else { stamp1.classList.add('hidden'); stamp1.classList.remove('flex'); }
 
             const stamp2 = document.getElementById('stamp_s2');
             if(st2 === 'approved') {
                 stamp2.classList.remove('hidden'); stamp2.classList.add('flex');
-                document.getElementById('pdf_s2_date').innerText = data.date_spv2.split(" ")[0];
+                document.getElementById('pdf_s2_date').innerText = data.date_spv2 ? data.date_spv2.split(" ")[0] : '';
                 generateQR("qrcode_s2", `ACC2|${data.app_spv2}|${data.date_spv2}`);
             } else { stamp2.classList.add('hidden'); stamp2.classList.remove('flex'); }
 
             const stamp3 = document.getElementById('stamp_s3');
             if(st3 === 'approved') {
                 stamp3.classList.remove('hidden'); stamp3.classList.add('flex');
-                document.getElementById('pdf_s3_date').innerText = data.date_spv3.split(" ")[0];
+                document.getElementById('pdf_s3_date').innerText = data.date_spv3 ? data.date_spv3.split(" ")[0] : '';
                 generateQR("qrcode_s3", `ACC3|${data.app_spv3}|${data.date_spv3}`);
             } else { stamp3.classList.add('hidden'); stamp3.classList.remove('flex'); }
             
@@ -670,23 +669,26 @@
                         </td>
                     `;
                 } else if (currentUserData.role === "spv") {
-                    let levelSaya = currentUserData.level;
+                    let levelSaya = Number(currentUserData.level) || 1;
                     let bisaApprove = false;
                     let pesanStatus = "Selesai";
 
                     if (!isRejected) {
                         if (levelSaya === 1 && !st1) bisaApprove = true;
-                        if (levelSaya === 2 && st1 === 'approved' && !st2) bisaApprove = true;
-                        if (levelSaya === 3 && st2 === 'approved' && !st3) bisaApprove = true;
+                        else if (levelSaya === 2 && st1 === 'approved' && !st2) bisaApprove = true;
+                        else if (levelSaya === 3 && st2 === 'approved' && !st3) bisaApprove = true;
                     }
 
-                    if (!bisaApprove) {
-                        if (isRejected) pesanStatus = "Ditolak (Proses Berhenti)";
+                    let sudahDiprosesSPVIni = (levelSaya === 1 && st1) || (levelSaya === 2 && st2) || (levelSaya === 3 && st3);
+
+                    if (sudahDiprosesSPVIni) {
+                        aksiTbody = `<td class="py-2 px-4 whitespace-nowrap"><span class="text-green-600 text-[11px] font-semibold bg-green-50 px-2 py-1.5 rounded border border-green-200">✅ Sudah Anda Proses</span></td>`;
+                    } else if (!bisaApprove) {
+                        if (isRejected) pesanStatus = "Ditolak (Berhenti)";
                         else if (levelSaya === 2 && !st1) pesanStatus = "Menunggu SPV 1";
-                        else if (levelSaya === 3 && !st2) pesanStatus = "Menunggu SPV 1 & 2";
-                        else if ((levelSaya === 1 && st1) || (levelSaya === 2 && st2) || (levelSaya === 3 && st3)) pesanStatus = "Sudah Anda Proses";
+                        else if (levelSaya === 3 && (!st1 || !st2)) pesanStatus = "Menunggu SPV 1 & 2";
                         
-                        aksiTbody = `<td class="py-2 px-4 whitespace-nowrap"><span class="text-gray-500 text-[11px] font-semibold bg-gray-100 px-2 py-1.5 rounded border">${pesanStatus}</span></td>`;
+                        aksiTbody = `<td class="py-2 px-4 whitespace-nowrap"><span class="text-orange-600 text-[11px] font-semibold bg-orange-50 px-2 py-1.5 rounded border border-orange-200">${pesanStatus}</span></td>`;
                     } else {
                         aksiTbody = `
                         <td class="py-2 px-4 whitespace-nowrap space-y-1">
