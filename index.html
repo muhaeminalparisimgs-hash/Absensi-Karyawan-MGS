@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Absensi Karyawan MGS</title>
+    <title>PORTAL KARYAWAN MGS</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
@@ -11,50 +11,56 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
     
-    <!-- html2pdf JS (Untuk Export PDF Struk Admin) -->
+    <!-- html2pdf JS, SheetJS, QRCode -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-    <!-- SheetJS (xlsx) untuk Export Real Excel .xlsx -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-    <!-- QRCode.js (Untuk Generate QR Code Approval) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- Firebase App & Services (Compat) -->
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans min-h-screen relative pb-12">
+<body class="bg-slate-50 text-slate-800 min-h-screen relative pb-16 antialiased">
 
     <!-- ======================= -->
     <!-- HALAMAN LOGIN           -->
     <!-- ======================= -->
     <div id="loginPage" class="min-h-screen flex flex-col items-center justify-center p-4">
-        <div class="bg-white p-6 rounded-2xl shadow-md w-full max-w-sm">
-            <div class="flex justify-center mb-3">
-                <img src="logomgs1.png" alt="Logo Forklift" class="h-35 w-35 object-contain" onerror="this.src='https://via.placeholder.com/96?text=LOGO'">
+        <div class="bg-white p-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-sm border border-slate-100">
+            <div class="flex justify-center mb-6">
+                <img src="logomgs1.png" alt="Logo MGS" class="h-35 w-auto object-contain" onerror="this.src='https://via.placeholder.com/150x50?text=LOGO+MGS'">
             </div>
             
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Portal Absensi Karyawan</h2>
-            <div id="loginError" class="hidden bg-red-100 text-red-700 p-2 rounded mb-4 text-sm text-center"></div>
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-1 text-center tracking-tight">Selamat Datang</h2>
+            <p class="text-sm text-slate-500 text-center mb-6">Portal Karyawan MGS</p>
+
+            <div id="loginError" class="hidden bg-rose-50 text-rose-600 p-3 rounded-xl mb-4 text-sm text-center font-medium border border-rose-100"></div>
             
             <form id="formLogin" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
-                    <input type="email" id="login_email" placeholder="nama@email.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Email / Username</label>
+                    <input type="email" id="login_email" placeholder="nama@email.com" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none text-sm" required>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" id="login_password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Password</label>
+                    <input type="password" id="login_password" placeholder="••••••••" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition-all outline-none text-sm" required>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-200 mt-2">
-                    Masuk
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-xl transition-all duration-200 mt-4 shadow-md shadow-slate-200">
+                    Masuk ke Portal
                 </button>
             </form>
             
-            <div class="mt-4 text-xs text-gray-600 text-center border-t pt-4 space-y-2">
-                <p>Belum punya akun user? <button type="button" onclick="bukaModalRegister()" class="text-blue-600 font-bold hover:underline">Daftar di sini</button></p>
+            <div class="mt-6 text-sm text-slate-500 text-center">
+                Belum punya akun? <button type="button" onclick="bukaModalRegister()" class="text-indigo-600 font-semibold hover:text-indigo-700 transition-colors">Daftar sekarang</button>
             </div>
         </div>
     </div>
@@ -62,27 +68,29 @@
     <!-- ======================= -->
     <!-- MODAL REGISTER USER     -->
     <!-- ======================= -->
-    <div id="registerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white p-6 rounded-2xl shadow-lg w-full max-w-sm">
-            <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">Registrasi Akun User Baru</h3>
-            <div id="registerError" class="hidden bg-red-100 text-red-700 p-2 rounded mb-3 text-xs text-center"></div>
+    <div id="registerModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-slate-800 mb-1 text-center">Registrasi Akun</h3>
+            <p class="text-xs text-slate-500 text-center mb-5">Lengkapi data diri Anda di bawah ini</p>
             
-            <form id="formRegister" class="space-y-3">
+            <div id="registerError" class="hidden bg-rose-50 text-rose-600 p-2 rounded-lg mb-4 text-xs text-center border border-rose-100"></div>
+            
+            <form id="formRegister" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Nama Lengkap & Operator</label>
-                    <input type="text" id="reg_nama" required placeholder="Contoh: Budi Santoso" class="w-full px-3 py-2 border rounded-lg text-sm outline-none">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Lengkap</label>
+                    <input type="text" id="reg_nama" required placeholder="Contoh: Budi Santoso" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Email Aktif</label>
-                    <input type="email" id="reg_email" required placeholder="user@email.com" class="w-full px-3 py-2 border rounded-lg text-sm outline-none">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Email Aktif</label>
+                    <input type="email" id="reg_email" required placeholder="user@email.com" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Password (Min. 6 Karakter)</label>
-                    <input type="password" id="reg_password" required class="w-full px-3 py-2 border rounded-lg text-sm outline-none">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Password (Min. 6 Karakter)</label>
+                    <input type="password" id="reg_password" required placeholder="••••••••" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                 </div>
-                <div class="flex gap-2 pt-2">
-                    <button type="button" onclick="tutupModalRegister()" class="w-1/2 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg text-sm font-semibold">Batal</button>
-                    <button type="submit" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-semibold">Daftar</button>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="tutupModalRegister()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">Batal</button>
+                    <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">Daftar</button>
                 </div>
             </form>
         </div>
@@ -91,26 +99,67 @@
     <!-- ======================= -->
     <!-- HALAMAN USER            -->
     <!-- ======================= -->
-    <div id="userPage" class="hidden min-h-screen flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md mb-2 flex justify-between items-center">
-            <p class="text-gray-600">Halo, <span id="namaUserSapaan" class="font-bold text-blue-600"></span></p>
-            <button onclick="logout()" class="text-red-500 hover:text-red-700 font-semibold text-sm bg-red-100 px-3 py-1 rounded-full">Logout</button>
+    <div id="userPage" class="hidden min-h-screen flex flex-col items-center py-8 p-4">
+        
+        <div class="w-full max-w-md mb-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-bold text-lg">
+                    <span id="inisialUser">U</span>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider" id="teksRoleUser">Halo,</p>
+                    <p id="namaUserSapaan" class="font-bold text-slate-800 leading-none mt-0.5"></p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <!-- Tombol Kembali ke Dashboard Khusus Admin -->
+                <button id="btnKeDashboard" onclick="tampilkanHalaman('dashboardPage')" class="hidden bg-indigo-50 hover:bg-indigo-100 text-indigo-600 px-3 py-2 rounded-xl text-xs font-bold transition-all">
+                    Dashboard
+                </button>
+                <button onclick="logout()" class="text-slate-500 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 px-3 py-2 rounded-xl text-xs font-semibold transition-all">Logout</button>
+            </div>
         </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-md w-full max-w-md">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">Log Pemakaian Alat Berat</h2>
-            <div id="statusMessage" class="hidden p-3 rounded-lg text-center text-sm font-medium mb-4"></div>
+        <div class="w-full max-w-md flex space-x-2 bg-slate-200/60 p-1.5 rounded-2xl mb-6 backdrop-blur-sm">
+            <button id="btnTabAbsen" onclick="switchTab('absen')" class="w-1/2 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm bg-white text-indigo-600">Presensi</button>
+            <button id="btnTabLog" onclick="switchTab('log')" class="w-1/2 py-2.5 text-sm font-semibold rounded-xl transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50">Log Alat</button>
+        </div>
+
+        <!-- BLOK ABSENSI GEOLOCATION -->
+        <div id="formTabAbsen" class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-md border border-slate-100 transition-all">
+            <div class="text-center mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Presensi Kehadiran</h2>
+            </div>
             
+            <div class="grid grid-cols-2 gap-4">
+                <button class="group relative flex flex-col items-center justify-center bg-emerald-50 hover:bg-emerald-500 border border-emerald-100 rounded-2xl p-6 transition-all duration-300" onclick="prosesAbsen('Masuk')">
+                    <span class="font-bold text-emerald-700 group-hover:text-white">MASUK</span>
+                </button>
+                <button class="group relative flex flex-col items-center justify-center bg-rose-50 hover:bg-rose-500 border border-rose-100 rounded-2xl p-6 transition-all duration-300" onclick="prosesAbsen('Keluar')">
+                    <span class="font-bold text-rose-700 group-hover:text-white">KELUAR</span>
+                </button>
+            </div>
+            <div id="statusAbsen" class="hidden mt-6 p-4 rounded-xl text-center text-sm font-medium border"></div>
+        </div>
+
+        <!-- BLOK FORM TIMESHEET -->
+        <div id="formTabLog" class="hidden bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] w-full max-w-md border border-slate-100 transition-all">
+            <div class="text-center mb-6">
+                <h2 class="text-lg font-bold text-slate-800">Timesheet Alat Berat</h2>
+                <p class="text-sm text-slate-500 mt-1">Catat aktivitas harian penggunaan alat</p>
+            </div>
+            <div id="statusMessage" class="hidden p-3 rounded-xl text-center text-sm font-medium mb-5"></div>
             <form id="forkliftForm" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">No Timesheet</label>
-                        <input type="text" id="no_timesheet" required placeholder="Contoh: TS-001" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-base">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">No Timesheet</label>
+                        <input type="text" id="no_timesheet" required placeholder="Ex: TS-001" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nomor/ID Alat Berat</label>
-                        <select id="forklift_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-base bg-white">
-                            <option value="">Pilih Alat</option>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">ID Alat Berat</label>
+                        <select id="forklift_id" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all cursor-pointer">
+                            <option value="">-- Pilih Alat --</option>
                             <option value="FL-01">Forklift 01 (15 Ton)</option>
                             <option value="FL-02">Forklift 02 (10 Ton)</option>
                             <option value="FL-03">Forklift 03 (10 Ton)</option>
@@ -118,7 +167,7 @@
                             <option value="FL-05">Forklift 05 (10 Ton)</option>
                             <option value="FL-06">Forklift 06 (15 Ton)</option>
                             <option value="FL-07">Forklift 07 (03 Ton)</option>
-                            <option value="FL-08">Forklift 08 (10 Ton)</option>
+                            <option value="FL-08">Forklift 08 (10 Ton)</option>	
                             <option value="FL-09">Forklift 09 (15 Ton)</option>
                             <option value="FL-10">Forklift 10 (15 Ton)</option>
                             <option value="FL-11">Forklift 11 (15 Ton)</option>
@@ -137,25 +186,22 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Mulai Kerja</label>
-                        <input type="text" id="waktu_mulai" required placeholder="Pilih Tgl & Jam" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Mulai Kerja</label>
+                        <input type="text" id="waktu_mulai" required placeholder="Tgl & Waktu" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm cursor-pointer transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Selesai Kerja</label>
-                        <input type="text" id="waktu_selesai" required placeholder="Pilih Tgl & Jam" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1.5">Selesai Kerja</label>
+                        <input type="text" id="waktu_selesai" required placeholder="Tgl & Waktu" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm cursor-pointer transition-all">
                     </div>
                 </div>
-
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Keterangan / Aktivitas</label>
-                    <textarea id="keterangan" rows="2" required placeholder="Contoh: Loading barang di Blok B" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1.5">Aktivitas / Lokasi</label>
+                    <textarea id="keterangan" rows="2" required placeholder="Contoh: Loading barang di Blok B" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all resize-none"></textarea>
                 </div>
-
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200">
-                    Simpan Data ke Database
+                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-md mt-2">
+                    Kirim Log Pekerjaan
                 </button>
             </form>
         </div>
@@ -165,30 +211,34 @@
     <!-- HALAMAN ADMIN & SPV     -->
     <!-- ======================= -->
     <div id="dashboardPage" class="hidden min-h-screen flex flex-col p-4 md:p-8">
-        <div class="max-w-screen-xl mx-auto w-full bg-white p-6 rounded-xl shadow-lg">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
+        <div class="max-w-screen-xl mx-auto w-full bg-white p-6 md:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-100 pb-6">
                 <div>
-                    <h2 id="judulDashboard" class="text-2xl font-bold text-gray-800">Dashboard</h2>
-                    <p class="text-sm text-gray-500">Selamat datang, <span id="namaDashboardSapaan" class="font-bold text-blue-600"></span></p>
+                    <h2 id="judulDashboard" class="text-2xl font-extrabold text-slate-800">Dashboard</h2>
+                    <p class="text-sm text-slate-500 mt-1">Selamat datang, <span id="namaDashboardSapaan" class="font-bold text-indigo-600"></span></p>
                 </div>
-                <div class="mt-4 md:mt-0 flex gap-2">
-                    <button onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-                        ⬇ Download Excel (.xlsx)
+                <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+                    <!-- Tombol agar khusus Admin bisa pindah ke halaman Presensi/Absen Sendiri -->
+                    <button id="btnPindahPresensi" onclick="tampilkanHalaman('userPage')" class="hidden bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                        <span></span> Buka Presensi / Log Saya
                     </button>
-                    <button onclick="logout()" class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition">
+                    <button onclick="downloadExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
+                        <span></span> Download Excel
+                    </button>
+                    <button onclick="logout()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
                         Logout
                     </button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-200">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-slate-50">
                         <tr id="tableHeadTr">
                             <!-- Header Table Dirender Lewat JavaScript -->
                         </tr>
                     </thead>
-                    <tbody id="tableBody">
+                    <tbody id="tableBody" class="divide-y divide-slate-200">
                         <!-- Data dimasukkan lewat JavaScript -->
                     </tbody>
                 </table>
@@ -201,46 +251,26 @@
     <!-- ================================== -->
     <div id="pdfContainer" class="hidden">
         <div id="pdfContent" class="bg-white text-gray-900 mx-auto p-3 font-mono text-sm leading-snug border" style="width: 300px; box-sizing: border-box;">
-            
             <div class="text-center border-b-2 border-dashed border-gray-500 pb-2 mb-2">
                 <h1 class="text-lg font-extrabold uppercase">LOG ALAT BERAT</h1>
                 <p class="text-[10px] text-gray-600">BUKTI PEMAKAIAN ALAT BERAT</p>
             </div>
             
             <div class="mb-3 space-y-1.5 text-xs">
+                <div><p class="text-gray-500 text-[10px]">No Timesheet:</p><p id="pdf_ts" class="font-bold"></p></div>
+                <div><p class="text-gray-500 text-[10px]">Operator:</p><p id="pdf_op" class="font-bold"></p></div>
+                <div><p class="text-gray-500 text-[10px]">Unit Alat:</p><p id="pdf_alat" class="font-bold"></p></div>
                 <div>
-                    <p class="text-gray-500 text-[10px]">No Timesheet:</p>
-                    <p id="pdf_ts" class="font-bold"></p>
+                    <p class="text-gray-500 text-[10px]">Waktu Kerja:</p>
+                    <p class="font-bold"><span id="pdf_mulai"></span> - <span id="pdf_selesai"></span></p>
                 </div>
-                <div>
-                    <p class="text-gray-500 text-[10px]">Operator:</p>
-                    <p id="pdf_op" class="font-bold"></p>
-                </div>
-                <div>
-                    <p class="text-gray-500 text-[10px]">Unit Alat:</p>
-                    <p id="pdf_alat" class="font-bold"></p>
-                </div>
-                <div class="flex justify-between">
-                    <div>
-                        <p class="text-gray-500 text-[10px]">Waktu Kerja:</p>
-                        <p class="font-bold"><span id="pdf_mulai"></span> - <span id="pdf_selesai"></span></p>
-                    </div>
-                </div>
-                <div>
-                    <p class="text-gray-500 text-[10px]">Total Durasi:</p>
-                    <p id="pdf_durasi" class="font-bold"></p>
-                </div>
-                <div>
-                    <p class="text-gray-500 text-[10px]">Aktivitas / Keterangan:</p>
-                    <p id="pdf_ket" class="font-bold break-words"></p>
-                </div>
+                <div><p class="text-gray-500 text-[10px]">Total Durasi:</p><p id="pdf_durasi" class="font-bold"></p></div>
+                <div><p class="text-gray-500 text-[10px]">Aktivitas / Keterangan:</p><p id="pdf_ket" class="font-bold break-words"></p></div>
             </div>
 
             <div class="border-t-2 border-dashed border-gray-500 pt-2 mb-2">
                 <p class="text-center font-bold mb-2 uppercase text-[10px] tracking-wider">-- Disetujui Oleh --</p>
-                
                 <div class="grid grid-cols-3 gap-1 text-center">
-                    <!-- SPV 1 -->
                     <div class="flex flex-col items-center">
                         <p class="font-semibold text-gray-600 text-[9px] mb-1">SPV 1</p>
                         <div id="stamp_s1" class="hidden flex-col items-center">
@@ -249,8 +279,6 @@
                         </div>
                         <p class="font-bold border-b border-gray-800 pb-0.5 mt-1 text-[9px] w-full truncate" id="pdf_s1"></p>
                     </div>
-
-                    <!-- SPV 2 -->
                     <div class="flex flex-col items-center">
                         <p class="font-semibold text-gray-600 text-[9px] mb-1">SPV 2</p>
                         <div id="stamp_s2" class="hidden flex-col items-center">
@@ -259,8 +287,6 @@
                         </div>
                         <p class="font-bold border-b border-gray-800 pb-0.5 mt-1 text-[9px] w-full truncate" id="pdf_s2"></p>
                     </div>
-
-                    <!-- SPV 3 -->
                     <div class="flex flex-col items-center">
                         <p class="font-semibold text-gray-600 text-[9px] mb-1">SPV 3</p>
                         <div id="stamp_s3" class="hidden flex-col items-center">
@@ -279,17 +305,104 @@
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer class="fixed bottom-0 left-0 p-4 text-xs font-semibold text-gray-400 uppercase tracking-wider z-50 pointer-events-none">
-        CREATED BY MUHAEMIN ALPARISI 2026
+    <!-- ======================= -->
+    <!-- FOOTER                  -->
+    <!-- ======================= -->
+    <footer class="fixed bottom-0 left-0 w-full p-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center z-40 pointer-events-none">
+        MGS PORTAL • MUHAEMIN ALPARISI 2026
     </footer>
 
     <!-- ======================= -->
-    <!-- SCRIPT LOGIKA FIREBASE  -->
+    <!-- SCRIPT DAN LOGIKA       -->
     <!-- ======================= -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // INISIALISASI FIREBASE (Ganti dengan config milik Anda)
+        // FUNGSI GANTI TAB USER
+        function switchTab(tab) {
+            const btnAbsen = document.getElementById('btnTabAbsen');
+            const btnLog = document.getElementById('btnTabLog');
+            const formAbsen = document.getElementById('formTabAbsen');
+            const formLog = document.getElementById('formTabLog');
+
+            if(tab === 'absen') {
+                btnAbsen.className = "w-1/2 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm bg-white text-indigo-600";
+                btnLog.className = "w-1/2 py-2.5 text-sm font-semibold rounded-xl transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50";
+                formAbsen.classList.remove('hidden'); formLog.classList.add('hidden');
+            } else {
+                btnLog.className = "w-1/2 py-2.5 text-sm font-semibold rounded-xl transition-all shadow-sm bg-white text-indigo-600";
+                btnAbsen.className = "w-1/2 py-2.5 text-sm font-semibold rounded-xl transition-all text-slate-500 hover:text-slate-700 hover:bg-white/50";
+                formLog.classList.remove('hidden'); formAbsen.classList.add('hidden');
+            }
+        }
+
+        // ==========================================
+        // 1. LOGIKA ABSENSI GOOGLE SCRIPT
+        // ==========================================
+        const SPREADSHEET_URL = "https://script.google.com/macros/s/AKfycbwuIvpgNGzs4HQcbBTvuWICz3K2N1xt9YOpv4W8k7Wj1k6FrIp3whyx9LWbcumudeCo8Q/exec";       
+        const LOKASI_1 = { lat: -6.0188947, lng: 105.9668766, nama: "Kantor KJS", radius: 2000 }; 
+        const LOKASI_2 = { lat: -6.0071129, lng: 106.0072869, nama: "Gd Logistik KS", radius: 2000 };
+
+        function hitungJarak(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; 
+            const phi1 = lat1 * Math.PI/180;
+            const phi2 = lat2 * Math.PI/180;
+            const deltaPhi = (lat2-lat1) * Math.PI/180;
+            const deltaLambda = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(deltaPhi/2) * Math.sin(deltaPhi/2) + Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda/2) * Math.sin(deltaLambda/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        }
+
+        function tampilkanStatusAbsen(pesan, jenis) {
+            const statusDiv = document.getElementById('statusAbsen');
+            statusDiv.innerHTML = pesan;
+            statusDiv.className = "mt-6 p-4 rounded-xl text-center text-sm font-medium border";
+            if (jenis === "success") statusDiv.classList.add("bg-emerald-50", "text-emerald-700", "border-emerald-200");
+            else if (jenis === "error") statusDiv.classList.add("bg-rose-50", "text-rose-700", "border-rose-200");
+            else statusDiv.classList.add("bg-indigo-50", "text-indigo-700", "border-indigo-200");
+            statusDiv.classList.remove("hidden");
+        }
+
+        function prosesAbsen(tipe) {
+            if (!currentUserData || !currentUserData.nama) {
+                tampilkanStatusAbsen("Sesi tidak valid, silakan login ulang.", "error"); return;
+            }
+            tampilkanStatusAbsen("Mencari titik satelit (GPS)... 🛰️", "info");
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+                        const j1 = hitungJarak(userLat, userLng, LOKASI_1.lat, LOKASI_1.lng);
+                        const j2 = hitungJarak(userLat, userLng, LOKASI_2.lat, LOKASI_2.lng);
+
+                        let sukses = false; let loc = "";
+                        if (j1 <= LOKASI_1.radius) { sukses = true; loc = LOKASI_1.nama; }
+                        else if (j2 <= LOKASI_2.radius) { sukses = true; loc = LOKASI_2.nama; }
+
+                        if (sukses) {
+                            tampilkanStatusAbsen("Lokasi Sesuai! Menyimpan ke sistem... ⏳", "info");
+                            fetch(SPREADSHEET_URL, {
+                                method: "POST", mode: "no-cors", 
+                                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                                body: JSON.stringify({ nama: currentUserData.nama, tipe: tipe, lokasi: loc })
+                            }).then(() => {
+                                tampilkanStatusAbsen(`✅ <b>BERHASIL</b><br><span class="text-xs text-slate-500 mt-1 block">Presensi ${tipe} tercatat di area ${loc}</span>`, "success");
+                                setTimeout(() => { document.getElementById('statusAbsen').classList.add("hidden"); }, 6000);
+                            }).catch(() => tampilkanStatusAbsen("Gagal menyimpan ke server.", "error"));
+                        } else {
+                            tampilkanStatusAbsen("📍 Anda berada di luar radius lokasi presensi.", "error");
+                        }
+                    },
+                    (error) => tampilkanStatusAbsen("Akses GPS ditolak/gagal. Nyalakan GPS HP Anda!", "error"),
+                    { enableHighAccuracy: true }
+                );
+            } else { tampilkanStatusAbsen("Browser tidak mendukung GPS.", "error"); }
+        }
+
+        // ==========================================
+        // 2. FIREBASE & TIMESHEET LOGIC & ADMIN DASHBOARD
+        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyBXiF77XQtXug9SeFum5Yx9J6BIiSnsgEQ",
             authDomain: "portal-absensi-karyawan.firebaseapp.com",
@@ -301,29 +414,24 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-
+        
         let currentUserData = null;
         let logs = [];
 
-        flatpickr("#waktu_mulai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d/m/Y H:i", time_24hr: true });
-        flatpickr("#waktu_selesai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d/m/Y H:i", time_24hr: true });
-
-        function formatUntukTabel(tglStr) {
-            const d = new Date(tglStr);
-            const day = String(d.getDate()).padStart(2, '0');
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = d.getFullYear();
-            const hour = String(d.getHours()).padStart(2, '0');
-            const minute = String(d.getMinutes()).padStart(2, '0');
-            return `${day}/${month}/${year} ${hour}:${minute}`;
-        }
+        flatpickr("#waktu_mulai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d M Y - H:i", time_24hr: true });
+        flatpickr("#waktu_selesai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d M Y - H:i", time_24hr: true });
 
         function getWaktuInput24Jam() {
             const d = new Date();
             return d.toLocaleString("id-ID", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
         }
+        function formatUntukTabel(tglStr) {
+            const d = new Date(tglStr);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            return `${day}/${month}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
 
-        // CEK STATUS AUTHENTICATION LOGIN
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 const doc = await db.collection("users").doc(user.uid).get();
@@ -331,13 +439,9 @@
                     currentUserData = doc.data();
                     setupDashboardUI();
                     ambilDataLogsRealtime();
-                } else {
-                    alert("Data profil pengguna tidak ditemukan di database.");
-                    auth.signOut();
-                }
+                } else { auth.signOut(); }
             } else {
-                currentUserData = null;
-                tampilkanHalaman("loginPage");
+                currentUserData = null; tampilkanHalaman("loginPage");
             }
         });
 
@@ -349,173 +453,125 @@
         }
 
         function setupDashboardUI() {
-            if (currentUserData.role === "admin" || currentUserData.role === "spv") {
+            const btnKeDashboard = document.getElementById("btnKeDashboard");
+            const btnPindahPresensi = document.getElementById("btnPindahPresensi");
+            const teksRoleUser = document.getElementById("teksRoleUser");
+
+            if (currentUserData.role === "admin") {
                 tampilkanHalaman("dashboardPage");
-                document.getElementById("namaDashboardSapaan").innerText = currentUserData.nama;
-                document.getElementById("judulDashboard").innerText = currentUserData.role === "admin" ? "Dashboard Administrator" : `Dashboard SPV Level ${currentUserData.level}`;
-            } else if (currentUserData.role === "user") {
+                btnPindahPresensi.classList.remove("hidden"); // Admin bisa ke presensi
+                btnKeDashboard.classList.remove("hidden"); // Tombol balik ke dashboard aktif
+                teksRoleUser.innerText = "Halo, Administrator";
+            } else if (currentUserData.role === "spv") {
+                tampilkanHalaman("dashboardPage");
+                btnPindahPresensi.classList.add("hidden"); // SPV TIDAK BISA ke presensi
+            } else {
                 tampilkanHalaman("userPage");
-                document.getElementById("namaUserSapaan").innerText = currentUserData.nama;
+                btnKeDashboard.classList.add("hidden"); // User biasa ga punya tombol dashboard
+                teksRoleUser.innerText = "Halo, Karyawan";
             }
+
+            document.getElementById("namaDashboardSapaan").innerText = currentUserData.nama;
+            document.getElementById("judulDashboard").innerText = currentUserData.role === "admin" ? "Admin Dashboard" : `SPV Level ${currentUserData.level}`;
+            document.getElementById("namaUserSapaan").innerText = currentUserData.nama;
+            document.getElementById("inisialUser").innerText = currentUserData.nama.charAt(0).toUpperCase();
         }
 
-        // LOGIN FORM HANDLER
         document.getElementById("formLogin").addEventListener("submit", function(e) {
             e.preventDefault();
-            const email = document.getElementById("login_email").value;
-            const pass = document.getElementById("login_password").value;
-            const errDiv = document.getElementById("loginError");
-
-            auth.signInWithEmailAndPassword(email, pass)
-                .then(() => {
-                    errDiv.classList.add("hidden");
-                    document.getElementById("formLogin").reset();
-                })
-                .catch((error) => {
-                    errDiv.innerText = "Login Gagal: " + error.message;
-                    errDiv.classList.remove("hidden");
+            auth.signInWithEmailAndPassword(document.getElementById("login_email").value, document.getElementById("login_password").value)
+                .then(() => document.getElementById("formLogin").reset())
+                .catch((err) => {
+                    const el = document.getElementById("loginError");
+                    el.innerText = "Gagal masuk. Cek email & password."; el.classList.remove("hidden");
                 });
         });
 
-        function logout() {
-            auth.signOut().then(() => {
-                currentUserData = null;
-                tampilkanHalaman("loginPage");
-            });
-        }
-
-        // REGISTRASI USER MODAL HANDLER
+        function logout() { auth.signOut(); }
         function bukaModalRegister() { document.getElementById('registerModal').classList.remove('hidden'); }
         function tutupModalRegister() { document.getElementById('registerModal').classList.add('hidden'); }
 
         document.getElementById('formRegister').addEventListener('submit', function(e) {
             e.preventDefault();
-            const nama = document.getElementById('reg_nama').value;
-            const email = document.getElementById('reg_email').value;
-            const password = document.getElementById('reg_password').value;
-            const errReg = document.getElementById('registerError');
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const uid = userCredential.user.uid;
-                    return db.collection("users").doc(uid).set({
-                        nama: nama,
-                        email: email,
-                        role: "user"
-                    });
-                })
-                .then(() => {
-                    alert("Registrasi Berhasil! Silakan login dengan akun Anda.");
-                    tutupModalRegister();
-                    document.getElementById('formRegister').reset();
-                    errReg.classList.add("hidden");
-                })
-                .catch((error) => {
-                    errReg.innerText = "Gagal Daftar: " + error.message;
-                    errReg.classList.remove("hidden");
+            auth.createUserWithEmailAndPassword(document.getElementById('reg_email').value, document.getElementById('reg_password').value)
+                .then((cred) => db.collection("users").doc(cred.user.uid).set({ nama: document.getElementById('reg_nama').value, email: document.getElementById('reg_email').value, role: "user" }))
+                .then(() => { alert("Sukses mendaftar!"); tutupModalRegister(); document.getElementById('formRegister').reset(); })
+                .catch((err) => { 
+                    document.getElementById('registerError').innerText = err.message; 
+                    document.getElementById('registerError').classList.remove("hidden"); 
                 });
         });
 
-        // INPUT DATA TIMESHEET OLEH USER
+        // FORM USER TIMESHEET FIREBASE
         document.getElementById("forkliftForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const msg = document.getElementById("statusMessage");
-            const noTimesheet = document.getElementById("no_timesheet").value;
-            const forkliftId = document.getElementById("forklift_id").value;
-            const waktuMulai = document.getElementById("waktu_mulai").value; 
-            const waktuSelesai = document.getElementById("waktu_selesai").value;
-            const keterangan = document.getElementById("keterangan").value;
-
-            const dateMulai = new Date(waktuMulai.replace(/-/g, '/'));
-            const dateSelesai = new Date(waktuSelesai.replace(/-/g, '/'));
+            const wMulai = document.getElementById("waktu_mulai").value; 
+            const wSelesai = document.getElementById("waktu_selesai").value;
+            const dateMulai = new Date(wMulai.replace(/-/g, '/'));
+            const dateSelesai = new Date(wSelesai.replace(/-/g, '/'));
 
             if (dateSelesai <= dateMulai) {
-                msg.className = "p-3 rounded-lg text-center text-sm font-medium mb-4 bg-red-100 text-red-700";
-                msg.innerText = "Error: Waktu Selesai tidak boleh sebelum atau sama dengan Waktu Mulai!";
-                msg.classList.remove("hidden");
-                return;
+                msg.className = "p-3 rounded-xl text-center text-sm font-medium mb-5 bg-rose-50 text-rose-700 border border-rose-200";
+                msg.innerText = "Error: Waktu Selesai tidak boleh sebelum Waktu Mulai!"; msg.classList.remove("hidden"); return;
             }
 
             const selisihMs = dateSelesai - dateMulai;
-            const jam = Math.floor(selisihMs / (1000 * 60 * 60));
-            const menit = Math.floor((selisihMs % (1000 * 60 * 60)) / (1000 * 60));
-
             const dataBaru = {
-                waktu_input: getWaktuInput24Jam(),
-                operator: currentUserData.nama,
-                no_timesheet: noTimesheet,
-                alat: forkliftId,
-                mulai: formatUntukTabel(waktuMulai),
-                selesai: formatUntukTabel(waktuSelesai),
-                durasi: `${jam}j ${menit}m`,
-                ket: keterangan,
+                waktu_input: getWaktuInput24Jam(), operator: currentUserData.nama,
+                no_timesheet: document.getElementById("no_timesheet").value, alat: document.getElementById("forklift_id").value,
+                mulai: formatUntukTabel(wMulai), selesai: formatUntukTabel(wSelesai),
+                durasi: `${Math.floor(selisihMs / (1000 * 60 * 60))}j ${Math.floor((selisihMs % (1000 * 60 * 60)) / (1000 * 60))}m`,
+                ket: document.getElementById("keterangan").value,
                 app_spv1: null, date_spv1: null, alasan_spv1: "", status_spv1: null,
                 app_spv2: null, date_spv2: null, alasan_spv2: "", status_spv2: null,
                 app_spv3: null, date_spv3: null, alasan_spv3: "", status_spv3: null,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            db.collection("forklift_logs").add(dataBaru)
-                .then(() => {
-                    document.getElementById("forkliftForm").reset();
-                    document.querySelector("#waktu_mulai")._flatpickr.clear();
-                    document.querySelector("#waktu_selesai")._flatpickr.clear();
-                    msg.className = "p-3 rounded-lg text-center text-sm font-medium mb-4 bg-green-100 text-green-700";
-                    msg.innerText = "✅ Data berhasil disimpan ke Database Cloud!";
-                    msg.classList.remove("hidden");
-                    setTimeout(() => { msg.classList.add("hidden"); }, 3000);
-                })
-                .catch((error) => {
-                    alert("Gagal menyimpan data: " + error.message);
-                });
+            db.collection("forklift_logs").add(dataBaru).then(() => {
+                document.getElementById("forkliftForm").reset();
+                document.querySelector("#waktu_mulai")._flatpickr.clear(); document.querySelector("#waktu_selesai")._flatpickr.clear();
+                msg.className = "p-3 rounded-xl text-center text-sm font-medium mb-5 bg-emerald-50 text-emerald-700 border border-emerald-200";
+                msg.innerText = "✅ Timesheet Berhasil Dikirim ke Cloud!"; msg.classList.remove("hidden");
+                setTimeout(() => { msg.classList.add("hidden"); switchTab('absen'); }, 3000);
+            }).catch(e => alert("Gagal kirim: " + e.message));
         });
 
-        // AMBIL DATA REALTIME DARI FIRESTORE
+        // ==========================================
+        // 3. FUNGSI ADMIN & SUPERVISOR (REALTIME DATA)
+        // ==========================================
         function ambilDataLogsRealtime() {
             db.collection("forklift_logs").orderBy("waktu_input", "desc")
                 .onSnapshot((snapshot) => {
                     logs = [];
-                    snapshot.forEach((doc) => {
-                        logs.push({ id: doc.id, ...doc.data() });
-                    });
+                    snapshot.forEach((doc) => { logs.push({ id: doc.id, ...doc.data() }); });
                     if (currentUserData && (currentUserData.role === "admin" || currentUserData.role === "spv")) {
                         tampilkanTabelDashboard();
                     }
                 });
         }
 
-        // HAPUS TIMESHEET OLEH ADMIN
         function deleteLog(docId) {
             if (confirm("⚠️ PERHATIAN: Apakah Anda yakin ingin menghapus data timesheet ini dari database cloud?")) {
-                db.collection("forklift_logs").doc(docId).delete().catch((error) => {
-                    alert("Gagal menghapus: " + error.message);
-                });
+                db.collection("forklift_logs").doc(docId).delete().catch((error) => alert("Gagal menghapus: " + error.message));
             }
         }
 
-        // APPROVAL / REJECT OLEH SPV
         function processApproval(docId, level, status) {
             let actionText = status === 'approved' ? 'ACC' : 'REJECT (Tolak)';
-            let alasan = prompt(`Masukkan catatan/alasan untuk ${actionText} Level ${level} (Opsional, kosongkan jika tidak ada):`, "");
+            let alasan = prompt(`Masukkan catatan/alasan untuk ${actionText} Level ${level} (Opsional):`, "");
             if (alasan === null) return; 
 
             const timeNow = getWaktuInput24Jam();
             let updateData = {};
+            if (level === 1) updateData = { app_spv1: currentUserData.nama, date_spv1: timeNow, alasan_spv1: alasan, status_spv1: status };
+            else if (level === 2) updateData = { app_spv2: currentUserData.nama, date_spv2: timeNow, alasan_spv2: alasan, status_spv2: status };
+            else if (level === 3) updateData = { app_spv3: currentUserData.nama, date_spv3: timeNow, alasan_spv3: alasan, status_spv3: status };
 
-            if (level === 1) {
-                updateData = { app_spv1: currentUserData.nama, date_spv1: timeNow, alasan_spv1: alasan, status_spv1: status };
-            } else if (level === 2) {
-                updateData = { app_spv2: currentUserData.nama, date_spv2: timeNow, alasan_spv2: alasan, status_spv2: status };
-            } else if (level === 3) {
-                updateData = { app_spv3: currentUserData.nama, date_spv3: timeNow, alasan_spv3: alasan, status_spv3: status };
-            }
-
-            db.collection("forklift_logs").doc(docId).update(updateData).catch((error) => {
-                alert("Gagal memperbarui status approval: " + error.message);
-            });
+            db.collection("forklift_logs").doc(docId).update(updateData).catch((error) => alert("Gagal memperbarui: " + error.message));
         }
 
-        // GENERATE QR CODE & CETAK PDF
         function generateQR(elementId, text) {
             document.getElementById(elementId).innerHTML = ""; 
             new QRCode(document.getElementById(elementId), { text: text, width: 45, height: 45, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
@@ -566,7 +622,6 @@
 
             const container = document.getElementById('pdfContainer');
             const element = document.getElementById('pdfContent');
-            
             container.classList.remove('hidden');
             container.style.position = 'absolute'; container.style.left = '-9999px'; container.style.top = '0';
 
@@ -582,7 +637,6 @@
             });
         }
 
-        // TAMPILKAN TABEL DASHBOARD
         function tampilkanTabelDashboard() {
             const tbody = document.getElementById("tableBody");
             const theadTr = document.getElementById("tableHeadTr");
@@ -590,36 +644,27 @@
             
             if (currentUserData.role === "admin") {
                 theadTr.innerHTML = `
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">No</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Waktu Input</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Operator</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Alat</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Mulai - Selesai</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Ket.</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600 bg-blue-50">Status & Catatan Approval</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Aksi (Admin)</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Info Operator</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Detail Log</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-100/50">Status Approval</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi (Admin)</th>
                 `;
             } else {
                 theadTr.innerHTML = `
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">No</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Waktu Input</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Operator</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Alat</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Mulai - Selesai</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Ket.</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600 bg-blue-50">Progres Approval</th>
-                    <th class="py-3 px-4 border-b text-left text-sm font-semibold text-gray-600">Aksi Anda</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Info Operator</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Detail Log</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-100/50">Progress</th>
+                    <th class="py-4 px-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Aksi Anda</th>
                 `;
             }
 
             if (logs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-6 text-center text-gray-500 text-sm">Belum ada data log pemakaian.</td></tr>`;
-                return;
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500 text-sm">Belum ada data log pemakaian.</td></tr>`; return;
             }
 
             logs.forEach((log, index) => {
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-gray-50 border-b";
+                tr.className = "hover:bg-slate-50 transition-colors";
 
                 let st1 = log.status_spv1 || (log.app_spv1 ? 'approved' : null);
                 let st2 = log.status_spv2 || (log.app_spv2 ? 'approved' : null);
@@ -628,101 +673,80 @@
                 let isFullyApproved = (st1 === 'approved' && st2 === 'approved' && st3 === 'approved');
                 let isRejected = (st1 === 'rejected' || st2 === 'rejected' || st3 === 'rejected');
 
-                let uiSpv1 = `<span class="text-gray-400">⏳ Belum</span>`;
-                if(st1 === 'approved') uiSpv1 = `<span class="text-green-600 font-bold">✅ ACC</span>`;
-                else if (st1 === 'rejected') uiSpv1 = `<span class="text-red-600 font-bold">❌ DITOLAK</span>`;
-                
-                let uiSpv2 = `<span class="text-gray-400">⏳ Belum</span>`;
-                if(st2 === 'approved') uiSpv2 = `<span class="text-green-600 font-bold">✅ ACC</span>`;
-                else if (st2 === 'rejected') uiSpv2 = `<span class="text-red-600 font-bold">❌ DITOLAK</span>`;
-                
-                let uiSpv3 = `<span class="text-gray-400">⏳ Belum</span>`;
-                if(st3 === 'approved') uiSpv3 = `<span class="text-green-600 font-bold">✅ ACC</span>`;
-                else if (st3 === 'rejected') uiSpv3 = `<span class="text-red-600 font-bold">❌ DITOLAK</span>`;
+                let uiSpv1 = st1 === 'approved' ? `<span class="text-emerald-600 font-bold">✅ ACC</span>` : (st1 === 'rejected' ? `<span class="text-rose-600 font-bold">❌ TOLAK</span>` : `<span class="text-slate-400">⏳ Belum</span>`);
+                let uiSpv2 = st2 === 'approved' ? `<span class="text-emerald-600 font-bold">✅ ACC</span>` : (st2 === 'rejected' ? `<span class="text-rose-600 font-bold">❌ TOLAK</span>` : `<span class="text-slate-400">⏳ Belum</span>`);
+                let uiSpv3 = st3 === 'approved' ? `<span class="text-emerald-600 font-bold">✅ ACC</span>` : (st3 === 'rejected' ? `<span class="text-rose-600 font-bold">❌ TOLAK</span>` : `<span class="text-slate-400">⏳ Belum</span>`);
 
                 let breakdownUI = `
-                    <div class="text-xs space-y-1 mt-1">
-                        <div>SPV 1: ${uiSpv1} ${log.alasan_spv1 ? `<br><span class="text-[10px] text-gray-500 italic block leading-tight border-l-2 border-gray-300 pl-1 mt-0.5">${log.alasan_spv1}</span>` : ''}</div>
-                        <div>SPV 2: ${uiSpv2} ${log.alasan_spv2 ? `<br><span class="text-[10px] text-gray-500 italic block leading-tight border-l-2 border-gray-300 pl-1 mt-0.5">${log.alasan_spv2}</span>` : ''}</div>
-                        <div>SPV 3: ${uiSpv3} ${log.alasan_spv3 ? `<br><span class="text-[10px] text-gray-500 italic block leading-tight border-l-2 border-gray-300 pl-1 mt-0.5">${log.alasan_spv3}</span>` : ''}</div>
+                    <div class="text-[11px] space-y-1.5 mt-1 text-slate-600">
+                        <div>SPV 1: ${uiSpv1} ${log.alasan_spv1 ? `<br><span class="italic text-slate-400 block border-l-2 border-slate-200 pl-1 mt-0.5">${log.alasan_spv1}</span>` : ''}</div>
+                        <div>SPV 2: ${uiSpv2} ${log.alasan_spv2 ? `<br><span class="italic text-slate-400 block border-l-2 border-slate-200 pl-1 mt-0.5">${log.alasan_spv2}</span>` : ''}</div>
+                        <div>SPV 3: ${uiSpv3} ${log.alasan_spv3 ? `<br><span class="italic text-slate-400 block border-l-2 border-slate-200 pl-1 mt-0.5">${log.alasan_spv3}</span>` : ''}</div>
                     </div>
                 `;
 
                 let statusUI = "";
                 if (currentUserData.role === "admin") {
-                    let topBadge = "";
-                    if (isFullyApproved) topBadge = `<span class="text-green-600 font-bold mb-1 inline-block border border-green-200 bg-green-50 px-2 rounded">Selesai (Full ACC)</span>`;
-                    else if (isRejected) topBadge = `<span class="text-red-600 font-bold mb-1 inline-block border border-red-200 bg-red-50 px-2 rounded">Ditolak</span>`;
-                    else topBadge = `<span class="text-orange-500 font-bold mb-1 inline-block border border-orange-200 bg-orange-50 px-2 rounded">Masih Berproses</span>`;
+                    let topBadge = isFullyApproved ? `<span class="text-emerald-700 font-bold mb-1.5 inline-block bg-emerald-100 px-2.5 py-0.5 rounded-full text-xs">Full Approved</span>` : (isRejected ? `<span class="text-rose-700 font-bold mb-1.5 inline-block bg-rose-100 px-2.5 py-0.5 rounded-full text-xs">Ditolak</span>` : `<span class="text-amber-700 font-bold mb-1.5 inline-block bg-amber-100 px-2.5 py-0.5 rounded-full text-xs">Proses...</span>`);
                     statusUI = topBadge + breakdownUI;
-                } else {
-                    statusUI = breakdownUI;
-                }
+                } else { statusUI = breakdownUI; }
 
                 let aksiTbody = "";
                 if (currentUserData.role === "admin") {
                     aksiTbody = `
-                        <td class="py-2 px-4 whitespace-nowrap">
-                            ${isFullyApproved ? `<button onclick="cetakPDF(${index})" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-md text-xs font-bold shadow-sm transition mr-1 mb-1">📄 Cetak</button>` : `<span class="inline-block text-gray-400 text-[10px] italic bg-gray-100 px-2 py-1.5 rounded mr-1 mb-1">Belum Selesai</span>`}
-                            <br>
-                            <button onclick="deleteLog('${log.id}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-bold shadow-sm transition">🗑 Hapus</button>
+                        <td class="py-4 px-4 align-top">
+                            ${isFullyApproved ? `<button onclick="cetakPDF(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition mb-2 block w-full">📄 Cetak PDF</button>` : `<span class="block text-slate-400 text-[10px] italic bg-slate-100 px-2 py-1.5 rounded mb-2 text-center">Belum Selesai</span>`}
+                            <button onclick="deleteLog('${log.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition block w-full">🗑 Hapus</button>
                         </td>
                     `;
                 } else if (currentUserData.role === "spv") {
                     let levelSaya = Number(currentUserData.level) || 1;
-                    let bisaApprove = false;
-                    let pesanStatus = "Selesai";
-
+                    let bisaApprove = false; let pesanStatus = "Selesai";
                     if (!isRejected) {
                         if (levelSaya === 1 && !st1) bisaApprove = true;
                         else if (levelSaya === 2 && st1 === 'approved' && !st2) bisaApprove = true;
                         else if (levelSaya === 3 && st2 === 'approved' && !st3) bisaApprove = true;
                     }
+                    let sudahDiproses = (levelSaya === 1 && st1) || (levelSaya === 2 && st2) || (levelSaya === 3 && st3);
 
-                    let sudahDiprosesSPVIni = (levelSaya === 1 && st1) || (levelSaya === 2 && st2) || (levelSaya === 3 && st3);
-
-                    if (sudahDiprosesSPVIni) {
-                        aksiTbody = `<td class="py-2 px-4 whitespace-nowrap"><span class="text-green-600 text-[11px] font-semibold bg-green-50 px-2 py-1.5 rounded border border-green-200">✅ Sudah Anda Proses</span></td>`;
+                    if (sudahDiproses) {
+                        aksiTbody = `<td class="py-4 px-4 align-top"><span class="text-emerald-700 text-[11px] font-semibold bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200 block text-center">✅ Sudah Proses</span></td>`;
                     } else if (!bisaApprove) {
-                        if (isRejected) pesanStatus = "Ditolak (Berhenti)";
-                        else if (levelSaya === 2 && !st1) pesanStatus = "Menunggu SPV 1";
-                        else if (levelSaya === 3 && (!st1 || !st2)) pesanStatus = "Menunggu SPV 1 & 2";
-                        
-                        aksiTbody = `<td class="py-2 px-4 whitespace-nowrap"><span class="text-orange-600 text-[11px] font-semibold bg-orange-50 px-2 py-1.5 rounded border border-orange-200">${pesanStatus}</span></td>`;
+                        if (isRejected) pesanStatus = "Ditolak (Stop)";
+                        else if (levelSaya === 2 && !st1) pesanStatus = "Tunggu SPV 1";
+                        else if (levelSaya === 3 && (!st1 || !st2)) pesanStatus = "Tunggu SPV 1&2";
+                        aksiTbody = `<td class="py-4 px-4 align-top"><span class="text-amber-700 text-[11px] font-semibold bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200 block text-center">${pesanStatus}</span></td>`;
                     } else {
                         aksiTbody = `
-                        <td class="py-2 px-4 whitespace-nowrap space-y-1">
-                            <button onclick="processApproval('${log.id}', ${levelSaya}, 'approved')" class="block w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm transition">✅ ACC</button>
-                            <button onclick="processApproval('${log.id}', ${levelSaya}, 'rejected')" class="block w-full bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md text-xs font-semibold shadow-sm transition">❌ Tolak</button>
+                        <td class="py-4 px-4 align-top space-y-2">
+                            <button onclick="processApproval('${log.id}', ${levelSaya}, 'approved')" class="block w-full bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition">✅ ACC</button>
+                            <button onclick="processApproval('${log.id}', ${levelSaya}, 'rejected')" class="block w-full bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">❌ Tolak</button>
                         </td>`;
                     }
                 }
 
                 tr.innerHTML = `
-                    <td class="py-2 px-4 text-sm text-gray-700">${index + 1}</td>
-                    <td class="py-2 px-4 text-sm text-gray-700 whitespace-nowrap">${log.waktu_input}</td>
-                    <td class="py-2 px-4 text-sm text-gray-700">
-                        ${log.operator} <br>
-                        <span class="text-blue-600 font-semibold text-xs">TS: ${log.no_timesheet || '-'}</span>
+                    <td class="py-4 px-4 align-top">
+                        <div class="font-bold text-slate-800 text-sm">${log.operator}</div>
+                        <div class="text-xs text-slate-500 mt-0.5">Input: ${log.waktu_input}</div>
+                        <div class="text-xs font-semibold text-indigo-600 mt-1 bg-indigo-50 inline-block px-2 py-0.5 rounded">TS: ${log.no_timesheet || '-'}</div>
                     </td>
-                    <td class="py-2 px-4 text-sm font-semibold text-gray-700">${log.alat}</td>
-                    <td class="py-2 px-4 text-sm text-gray-700 whitespace-nowrap">
-                        <div class="text-xs text-gray-500">Mulai: ${log.mulai}</div>
-                        <div class="text-xs text-gray-500">Akhir: ${log.selesai}</div>
-                        <div class="text-xs font-bold text-gray-800 mt-1">Durasi: ${log.durasi}</div>
+                    <td class="py-4 px-4 align-top text-sm">
+                        <div class="font-bold text-slate-700">${log.alat}</div>
+                        <div class="text-[11px] text-slate-500 mt-1"><span class="font-semibold">Mulai:</span> ${log.mulai}</div>
+                        <div class="text-[11px] text-slate-500"><span class="font-semibold">Akhir:</span> ${log.selesai}</div>
+                        <div class="text-[11px] text-slate-500"><span class="font-semibold">Durasi:</span> <span class="text-slate-800 font-bold">${log.durasi}</span></div>
+                        <div class="text-xs text-slate-600 mt-2 bg-slate-50 p-1.5 rounded border border-slate-100 max-w-[200px] break-words">${log.ket}</div>
                     </td>
-                    <td class="py-2 px-4 text-sm text-gray-700 max-w-xs truncate" title="${log.ket}">${log.ket}</td>
-                    <td class="py-2 px-4 text-sm bg-blue-50/50">${statusUI}</td>
+                    <td class="py-4 px-4 align-top bg-slate-50/50">${statusUI}</td>
                     ${aksiTbody}
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // DOWNLOAD EXCEL
         function downloadExcel() {
             if (logs.length === 0) { alert("Tidak ada data untuk didownload."); return; }
-
             let excelData = logs.map((log, index) => {
                 return {
                     "No": index + 1, "Waktu Input": log.waktu_input, "Nama Operator": log.operator,
@@ -733,11 +757,10 @@
                     "Status SPV 3": (log.status_spv3 || 'Belum').toUpperCase(), "Catatan SPV 3": log.alasan_spv3 || "-"
                 };
             });
-
             const worksheet = XLSX.utils.json_to_sheet(excelData);
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Log Forklift");
-            XLSX.writeFile(workbook, "Laporan_Forklift_Cloud.xlsx");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Log");
+            XLSX.writeFile(workbook, "Laporan_Log_Karyawan.xlsx");
         }
     </script>
 </body>
