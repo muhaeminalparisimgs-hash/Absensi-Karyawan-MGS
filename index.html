@@ -16,6 +16,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -173,26 +176,26 @@
                             <option value="FL-01">Forklift 01 (15 Ton)</option>
                             <option value="FL-02">Forklift 02 (10 Ton)</option>
                             <option value="FL-03">Forklift 03 (10 Ton)</option>
-			                <option value="FL-04">Forklift 04 (15 Ton)</option>
-			                <option value="FL-05">Forklift 05 (10 Ton)</option>
-			                <option value="FL-06">Forklift 06 (15 Ton)</option>
-			                <option value="FL-07">Forklift 07 (03 Ton)</option>
-			                <option value="FL-08">Forklift 08 (10 Ton)</option>
-			                <option value="FL-09">Forklift 09 (15 Ton)</option>
-			                <option value="FL-10">Forklift 10 (15 Ton)</option>
-			                <option value="FL-11">Forklift 11 (15 Ton)</option>
-			                <option value="FL-12">Forklift 12 (15 Ton)</option>
-			                <option value="FL-13">Forklift 13 (15 Ton)</option>
-			                <option value="FL-14">Forklift 14 (15 Ton)</option>
-			                <option value="FL-20">Forklift 20 (23 Ton)</option>
-			                <option value="FL-22">Forklift 22 (23 Ton)</option>
+                            <option value="FL-04">Forklift 04 (15 Ton)</option>
+                            <option value="FL-05">Forklift 05 (10 Ton)</option>
+                            <option value="FL-06">Forklift 06 (15 Ton)</option>
+                            <option value="FL-07">Forklift 07 (03 Ton)</option>
+                            <option value="FL-08">Forklift 08 (10 Ton)</option>
+                            <option value="FL-09">Forklift 09 (15 Ton)</option>
+                            <option value="FL-10">Forklift 10 (15 Ton)</option>
+                            <option value="FL-11">Forklift 11 (15 Ton)</option>
+                            <option value="FL-12">Forklift 12 (15 Ton)</option>
+                            <option value="FL-13">Forklift 13 (15 Ton)</option>
+                            <option value="FL-14">Forklift 14 (15 Ton)</option>
+                            <option value="FL-20">Forklift 20 (23 Ton)</option>
+                            <option value="FL-22">Forklift 22 (23 Ton)</option>
                             <option value="EX-01">Excavator 01 Komatsu</option>
-			                <option value="EX-02">Excavator 02 Caterpilar</option>
-			                <option value="EX-03">Excavator 03 JCB</option>
-			                <option value="L-01">Loader 01 Doosan</option>
-			                <option value="L-02">Loader 02 Liugong</option>
-			                <option value="L-03">Loader 03 Liugong</option>
-			                <option value="L-04">Loader 04 Liugong</option>
+                            <option value="EX-02">Excavator 02 Caterpilar</option>
+                            <option value="EX-03">Excavator 03 JCB</option>
+                            <option value="L-01">Loader 01 Doosan</option>
+                            <option value="L-02">Loader 02 Liugong</option>
+                            <option value="L-03">Loader 03 Liugong</option>
+                            <option value="L-04">Loader 04 Liugong</option>
                         </select>
                     </div>
                 </div>
@@ -210,7 +213,7 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1.5">Aktivitas / Lokasi</label>
                     <textarea id="keterangan" rows="2" required placeholder="Contoh: Loading barang di Blok B" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-sm transition-all resize-none"></textarea>
                 </div>
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-md mt-2">
+                <button type="submit" id="btnSubmitLog" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 shadow-md mt-2">
                     Kirim Log Pekerjaan
                 </button>
             </form>
@@ -232,7 +235,6 @@
     <!-- HALAMAN ADMIN & SPV     -->
     <!-- ======================= -->
     <div id="dashboardPage" class="hidden min-h-screen flex flex-col p-4 md:p-8">
-        <!-- Kode Admin Dashboard (tetap sama dengan yang Anda buat) -->
         <div class="max-w-screen-xl mx-auto w-full bg-white p-6 md:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
             <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-100 pb-6">
                 <div>
@@ -268,10 +270,39 @@
     </div>
 
     <!-- ================================== -->
-    <!-- TEMPLATE CETAK PDF (Tetap sama)    -->
+    <!-- TEMPLATE CETAK PDF                 -->
     <!-- ================================== -->
     <div id="pdfContainer" class="hidden">
-        <!-- Struktur PDF di sini -->
+        <div id="pdfContent" class="p-4 text-xs font-mono">
+            <h3 class="text-center font-bold text-sm">TIMESHEET STRUK</h3>
+            <hr class="my-2 border-black"/>
+            <p>No TS: <span id="pdf_ts"></span></p>
+            <p>Operator: <span id="pdf_op"></span></p>
+            <p>Alat: <span id="pdf_alat"></span></p>
+            <p>Mulai: <span id="pdf_mulai"></span></p>
+            <p>Selesai: <span id="pdf_selesai"></span></p>
+            <p>Durasi: <span id="pdf_durasi"></span></p>
+            <p>Aktivitas: <span id="pdf_ket"></span></p>
+            <hr class="my-2 border-black"/>
+            <div class="space-y-2">
+                <div id="stamp_s1" class="hidden flex-col items-center border border-dashed border-emerald-600 p-1 rounded">
+                    <p class="font-bold text-emerald-700">SPV 1 ACC: <span id="pdf_s1"></span></p>
+                    <p class="text-[9px]" id="pdf_s1_date"></p>
+                    <div id="qrcode_s1" class="mt-1"></div>
+                </div>
+                <div id="stamp_s2" class="hidden flex-col items-center border border-dashed border-emerald-600 p-1 rounded">
+                    <p class="font-bold text-emerald-700">SPV 2 ACC: <span id="pdf_s2"></span></p>
+                    <p class="text-[9px]" id="pdf_s2_date"></p>
+                    <div id="qrcode_s2" class="mt-1"></div>
+                </div>
+                <div id="stamp_s3" class="hidden flex-col items-center border border-dashed border-emerald-600 p-1 rounded">
+                    <p class="font-bold text-emerald-700">SPV 3 ACC: <span id="pdf_s3"></span></p>
+                    <p class="text-[9px]" id="pdf_s3_date"></p>
+                    <div id="qrcode_s3" class="mt-1"></div>
+                </div>
+            </div>
+            <p class="mt-4 text-[9px] text-center">Ref ID: <span id="pdf_ref_id"></span> | Printed: <span id="pdf_print_time"></span></p>
+        </div>
     </div>
 
     <!-- ======================= -->
@@ -286,6 +317,19 @@
     <!-- ======================= -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
+        // ====================================================
+        // CONFIGURASI EMAILJS (Isi dengan kunci EmailJS Anda)
+        // ====================================================
+        const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY"; 
+        const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID"; 
+        const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID"; 
+        
+        try {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (e) {
+            console.warn("EmailJS gagal diinisialisasi:", e);
+        }
+
         // FUNGSI GANTI TAB USER
         function switchTab(tab) {
             const btnAbsen = document.getElementById('btnTabAbsen');
@@ -349,7 +393,6 @@
                         if (sukses) {
                             tampilkanStatusAbsen("Lokasi Sesuai! Menyimpan ke sistem... ⏳", "info");
                             
-                            // 1. Simpan ke Google Script
                             fetch(SPREADSHEET_URL, {
                                 method: "POST", mode: "no-cors", 
                                 headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -358,7 +401,6 @@
                                 tampilkanStatusAbsen(`✅ <b>BERHASIL</b><br><span class="text-xs text-slate-500 mt-1 block">Presensi ${tipe} tercatat di area ${loc}</span>`, "success");
                                 setTimeout(() => { document.getElementById('statusAbsen').classList.add("hidden"); }, 6000);
                                 
-                                // 2. SIMPAN JUGA KE FIREBASE (Untuk Riwayat)
                                 db.collection("presensi_logs").add({
                                     nama: currentUserData.nama,
                                     tipe: tipe,
@@ -389,7 +431,11 @@
             messagingSenderId: "1085800121171",
             appId: "1:1085800121171:web:9a389631a46c6d74dbd7a6"
         };
-        firebase.initializeApp(firebaseConfig);
+        
+        // Cek inisialisasi agar tidak double init
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         const auth = firebase.auth();
         const db = firebase.firestore();
         
@@ -410,18 +456,33 @@
             return `${day}/${month}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         }
 
+        // PENANGANAN AUTH STATE YANG DIPERKUAT (Mencegah Logout Otomatis jika Doc Users Belum Ada)
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                const doc = await db.collection("users").doc(user.uid).get();
-                if (doc.exists) {
-                    currentUserData = doc.data();
+                try {
+                    const docRef = db.collection("users").doc(user.uid);
+                    let doc = await docRef.get();
+                    
+                    if (doc.exists) {
+                        currentUserData = doc.data();
+                    } else {
+                        // Buat otomatis profil default jika belum ada di koleksi users
+                        currentUserData = {
+                            nama: user.email.split('@')[0],
+                            email: user.email,
+                            role: "user"
+                        };
+                        await docRef.set(currentUserData);
+                    }
                     setupDashboardUI();
                     ambilDataLogsRealtime();
-                    // Load Riwayat Personal
                     loadUserHistory();
-                } else { auth.signOut(); }
+                } catch (error) {
+                    console.error("Gagal mengambil data user dari Firestore:", error);
+                }
             } else {
-                currentUserData = null; tampilkanHalaman("loginPage");
+                currentUserData = null; 
+                tampilkanHalaman("loginPage");
             }
         });
 
@@ -433,6 +494,7 @@
         }
 
         function setupDashboardUI() {
+            if (!currentUserData) return;
             const btnKeDashboard = document.getElementById("btnKeDashboard");
             const btnPindahPresensi = document.getElementById("btnPindahPresensi");
             const teksRoleUser = document.getElementById("teksRoleUser");
@@ -451,30 +513,26 @@
                 teksRoleUser.innerText = "Halo, Karyawan";
             }
 
-            document.getElementById("namaDashboardSapaan").innerText = currentUserData.nama;
-            document.getElementById("judulDashboard").innerText = currentUserData.role === "admin" ? "Admin Dashboard" : `SPV Level ${currentUserData.level}`;
-            document.getElementById("namaUserSapaan").innerText = currentUserData.nama;
-            document.getElementById("inisialUser").innerText = currentUserData.nama.charAt(0).toUpperCase();
+            document.getElementById("namaDashboardSapaan").innerText = currentUserData.nama || 'User';
+            document.getElementById("judulDashboard").innerText = currentUserData.role === "admin" ? "Admin Dashboard" : `SPV Level ${currentUserData.level || 1}`;
+            document.getElementById("namaUserSapaan").innerText = currentUserData.nama || 'User';
+            document.getElementById("inisialUser").innerText = (currentUserData.nama || 'U').charAt(0).toUpperCase();
         }
 
-        // ==========================================
-        // FUNGSI LOAD RIWAYAT PERSONAL (NEW)
-        // ==========================================
         function loadUserHistory() {
             if (!currentUserData) return;
 
-            // 1. Load History Absen
             db.collection("presensi_logs")
               .where("nama", "==", currentUserData.nama)
               .onSnapshot(snapshot => {
                   const container = document.getElementById("listHistoryAbsen");
+                  if (!container) return;
                   container.innerHTML = "";
                   
                   let dataList = [];
                   snapshot.forEach(doc => dataList.push(doc.data()));
-                  // Urutkan dari yang terbaru (client-side sort menghindari error index Firestore)
                   dataList.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
-                  dataList = dataList.slice(0, 5); // Ambil 5 teratas
+                  dataList = dataList.slice(0, 5);
 
                   if (dataList.length === 0) {
                       container.innerHTML = "<p class='text-xs text-slate-500 text-center italic'>Belum ada data presensi.</p>";
@@ -495,11 +553,11 @@
                   });
               });
 
-            // 2. Load History Log Alat Berat
             db.collection("forklift_logs")
               .where("operator", "==", currentUserData.nama)
               .onSnapshot(snapshot => {
                   const container = document.getElementById("listHistoryLog");
+                  if (!container) return;
                   container.innerHTML = "";
                   
                   let dataList = [];
@@ -520,7 +578,6 @@
                       let txtStatus = "⏳ Menunggu SPV 1";
                       let bgStatus = "bg-slate-100 text-slate-600 border-slate-200";
 
-                      // Logika Dinamis Text Status Approval
                       if (st1 === 'rejected' || st2 === 'rejected' || st3 === 'rejected') {
                           txtStatus = "❌ Ditolak (Rejected)";
                           bgStatus = "bg-rose-50 text-rose-600 border-rose-100";
@@ -528,10 +585,10 @@
                           txtStatus = "✅ ACC Selesai (3/3)";
                           bgStatus = "bg-emerald-50 text-emerald-600 border-emerald-200";
                       } else if (st2 === 'approved') {
-                          txtStatus = `⏳ Menunggu SPV 3 (Di-ACC: ${data.app_spv1.split(" ")[0]}, ${data.app_spv2.split(" ")[0]})`;
+                          txtStatus = `⏳ Menunggu SPV 3`;
                           bgStatus = "bg-indigo-50 text-indigo-600 border-indigo-100";
                       } else if (st1 === 'approved') {
-                          txtStatus = `⏳ Menunggu SPV 2 (Di-ACC: ${data.app_spv1.split(" ")[0]})`;
+                          txtStatus = `⏳ Menunggu SPV 2`;
                           bgStatus = "bg-indigo-50 text-indigo-600 border-indigo-100";
                       }
 
@@ -556,11 +613,18 @@
         // LOGIN / REGISTER LOGIC
         document.getElementById("formLogin").addEventListener("submit", function(e) {
             e.preventDefault();
-            auth.signInWithEmailAndPassword(document.getElementById("login_email").value, document.getElementById("login_password").value)
-                .then(() => document.getElementById("formLogin").reset())
+            const email = document.getElementById("login_email").value;
+            const pass = document.getElementById("login_password").value;
+            
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => {
+                    document.getElementById("formLogin").reset();
+                    document.getElementById("loginError").classList.add("hidden");
+                })
                 .catch((err) => {
                     const el = document.getElementById("loginError");
-                    el.innerText = "Gagal masuk. Cek email & password."; el.classList.remove("hidden");
+                    el.innerText = "Gagal masuk: " + err.message; 
+                    el.classList.remove("hidden");
                 });
         });
 
@@ -570,14 +634,65 @@
 
         document.getElementById('formRegister').addEventListener('submit', function(e) {
             e.preventDefault();
-            auth.createUserWithEmailAndPassword(document.getElementById('reg_email').value, document.getElementById('reg_password').value)
-                .then((cred) => db.collection("users").doc(cred.user.uid).set({ nama: document.getElementById('reg_nama').value, email: document.getElementById('reg_email').value, role: "user" }))
-                .then(() => { alert("Sukses mendaftar!"); tutupModalRegister(); document.getElementById('formRegister').reset(); })
+            const nama = document.getElementById('reg_nama').value;
+            const email = document.getElementById('reg_email').value;
+            const password = document.getElementById('reg_password').value;
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((cred) => {
+                    return db.collection("users").doc(cred.user.uid).set({ 
+                        nama: nama, 
+                        email: email, 
+                        role: "user" 
+                    });
+                })
+                .then(() => { 
+                    alert("Sukses mendaftar!"); 
+                    tutupModalRegister(); 
+                    document.getElementById('formRegister').reset(); 
+                })
                 .catch((err) => { 
-                    document.getElementById('registerError').innerText = err.message; 
-                    document.getElementById('registerError').classList.remove("hidden"); 
+                    const regErr = document.getElementById('registerError');
+                    regErr.innerText = err.message; 
+                    regErr.classList.remove("hidden"); 
                 });
         });
+
+        // FUNGSI KIRIM EMAIL NOTIFIKASI KE SPV
+        async function kirimEmailKeSPV(targetLevel, dataTimesheet) {
+            try {
+                const spvQuery = await db.collection("users")
+                    .where("role", "==", "spv")
+                    .where("level", "==", targetLevel)
+                    .get();
+
+                if (spvQuery.empty) {
+                    console.warn(`Tidak ada SPV ditemukan untuk Level ${targetLevel}`);
+                    return;
+                }
+
+                spvQuery.forEach((doc) => {
+                    const spvData = doc.data();
+                    if (spvData.email) {
+                        const templateParams = {
+                            to_email: spvData.email,
+                            to_name: spvData.nama || `SPV Level ${targetLevel}`,
+                            operator_name: dataTimesheet.operator,
+                            no_timesheet: dataTimesheet.no_timesheet,
+                            alat: dataTimesheet.alat,
+                            durasi: dataTimesheet.durasi,
+                            keterangan: dataTimesheet.ket
+                        };
+
+                        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+                            .then(() => console.log(`Email notifikasi terkirim ke SPV Level ${targetLevel}`))
+                            .catch((err) => console.error("Gagal mengirim email via EmailJS:", err));
+                    }
+                });
+            } catch (err) {
+                console.error("Gagal mengambil data SPV dari Firestore:", err);
+            }
+        }
 
         // FORM USER TIMESHEET FIREBASE
         document.getElementById("forkliftForm").addEventListener("submit", function(e) {
@@ -590,17 +705,20 @@
 
             if (dateSelesai <= dateMulai) {
                 msg.className = "p-3 rounded-xl text-center text-sm font-medium mb-5 bg-rose-50 text-rose-700 border border-rose-200";
-                msg.innerText = "Error: Waktu Selesai tidak boleh sebelum Waktu Mulai!"; msg.classList.remove("hidden"); return;
+                msg.innerText = "Error: Waktu Selesai tidak boleh sebelum Waktu Mulai!"; 
+                msg.classList.remove("hidden"); 
+                return;
             }
 
             const selisihMs = dateSelesai - dateMulai;
             const dataBaru = {
                 waktu_input: getWaktuInput24Jam(), 
-                created_at: Date.now(), // <-- Ditambahkan untuk mempermudah sorting riwayat
+                created_at: Date.now(),
                 operator: currentUserData.nama,
                 no_timesheet: document.getElementById("no_timesheet").value, 
                 alat: document.getElementById("forklift_id").value,
-                mulai: formatUntukTabel(wMulai), selesai: formatUntukTabel(wSelesai),
+                mulai: formatUntukTabel(wMulai), 
+                selesai: formatUntukTabel(wSelesai),
                 durasi: `${Math.floor(selisihMs / (1000 * 60 * 60))}j ${Math.floor((selisihMs % (1000 * 60 * 60)) / (1000 * 60))}m`,
                 ket: document.getElementById("keterangan").value,
                 app_spv1: null, date_spv1: null, alasan_spv1: "", status_spv1: null,
@@ -611,14 +729,20 @@
 
             db.collection("forklift_logs").add(dataBaru).then(() => {
                 document.getElementById("forkliftForm").reset();
-                document.querySelector("#waktu_mulai")._flatpickr.clear(); document.querySelector("#waktu_selesai")._flatpickr.clear();
+                document.querySelector("#waktu_mulai")._flatpickr.clear(); 
+                document.querySelector("#waktu_selesai")._flatpickr.clear();
+                
                 msg.className = "p-3 rounded-xl text-center text-sm font-medium mb-5 bg-emerald-50 text-emerald-700 border border-emerald-200";
-                msg.innerText = "✅ Timesheet Berhasil Dikirim ke Cloud!"; msg.classList.remove("hidden");
+                msg.innerText = "✅ Timesheet Berhasil Dikirim ke Cloud & Notifikasi Email Diproses!"; 
+                msg.classList.remove("hidden");
+
+                // KIRIM EMAIL KE SPV LEVEL 1
+                kirimEmailKeSPV(1, dataBaru);
+
                 setTimeout(() => { msg.classList.add("hidden"); switchTab('absen'); }, 3000);
             }).catch(e => alert("Gagal kirim: " + e.message));
         });
 
-        // ADMIN DASHBOARD & EXCEL (Sisa script tidak ada yang dihapus)
         function ambilDataLogsRealtime() {
             db.collection("forklift_logs").orderBy("waktu_input", "desc")
                 .onSnapshot((snapshot) => {
@@ -631,12 +755,12 @@
         }
         
         function deleteLog(docId) {
-            if (confirm("⚠️ PERHATIAN: Apakah Anda yakin ingin menghapus data timesheet ini dari database cloud?")) {
+            if (confirm("⚠️ Apakah Anda yakin ingin menghapus data timesheet ini?")) {
                 db.collection("forklift_logs").doc(docId).delete().catch((error) => alert("Gagal menghapus: " + error.message));
             }
         }
 
-        function processApproval(docId, level, status) {
+        async function processApproval(docId, level, status) {
             let actionText = status === 'approved' ? 'ACC' : 'REJECT (Tolak)';
             let alasan = prompt(`Masukkan catatan/alasan untuk ${actionText} Level ${level} (Opsional):`, "");
             if (alasan === null) return; 
@@ -647,19 +771,30 @@
             else if (level === 2) updateData = { app_spv2: currentUserData.nama, date_spv2: timeNow, alasan_spv2: alasan, status_spv2: status };
             else if (level === 3) updateData = { app_spv3: currentUserData.nama, date_spv3: timeNow, alasan_spv3: alasan, status_spv3: status };
 
-            db.collection("forklift_logs").doc(docId).update(updateData).catch((error) => alert("Gagal memperbarui: " + error.message));
+            try {
+                await db.collection("forklift_logs").doc(docId).update(updateData);
+                
+                if (status === 'approved') {
+                    const docSnap = await db.collection("forklift_logs").doc(docId).get();
+                    if (docSnap.exists) {
+                        const dataTS = docSnap.data();
+                        if (level === 1) kirimEmailKeSPV(2, dataTS);
+                        else if (level === 2) kirimEmailKeSPV(3, dataTS);
+                    }
+                }
+            } catch (error) {
+                alert("Gagal memperbarui status approval: " + error.message);
+            }
         }
 
         function generateQR(elementId, text) {
-            document.getElementById(elementId).innerHTML = ""; 
-            new QRCode(document.getElementById(elementId), { text: text, width: 45, height: 45, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.innerHTML = ""; 
+            new QRCode(el, { text: text, width: 45, height: 45, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
         }
 
-        // ===================================
-        // Fungsi PDF dan Tabel sama persis
-        // ===================================
         function cetakPDF(index) {
-            // Logic cetak PDF yang Anda buat
             const data = logs[index];
             document.getElementById('pdf_ts').innerText = data.no_timesheet || '-';
             document.getElementById('pdf_op').innerText = data.operator;
@@ -720,9 +855,9 @@
         }
 
         function tampilkanTabelDashboard() {
-            // (Logika rendering tabel admin yang tidak saya rubah agar dashboard Anda tetap berfungsi)
             const tbody = document.getElementById("tableBody");
             const theadTr = document.getElementById("tableHeadTr");
+            if (!tbody || !theadTr) return;
             tbody.innerHTML = ""; 
             
             if (currentUserData.role === "admin") {
