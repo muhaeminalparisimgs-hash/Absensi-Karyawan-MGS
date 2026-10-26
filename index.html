@@ -100,6 +100,34 @@
     </div>
 
     <!-- ======================= -->
+    <!-- MODAL GANTI EMAIL SPV   -->
+    <!-- ======================= -->
+    <div id="modalGantiEmail" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-all">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-bold text-slate-800 mb-1 text-center">Ubah Email Akun SPV</h3>
+            <p class="text-xs text-slate-500 text-center mb-5">Masukkan email baru dan password lama Anda</p>
+            
+            <div id="emailErrorMsg" class="hidden bg-rose-50 text-rose-600 p-2 rounded-lg mb-4 text-xs text-center border border-rose-100"></div>
+            <div id="emailSuccessMsg" class="hidden bg-emerald-50 text-emerald-600 p-2 rounded-lg mb-4 text-xs text-center border border-emerald-100"></div>
+            
+            <form id="formGantiEmail" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Email Baru</label>
+                    <input type="email" id="email_baru" required placeholder="emailbaru@mgs.com" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Konfirmasi Password Saat Ini</label>
+                    <input type="password" id="email_password_konfirmasi" required placeholder="••••••••" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="tutupModalGantiEmail()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-sm font-semibold transition-colors">Batal</button>
+                    <button type="submit" class="w-1/2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================= -->
     <!-- HALAMAN USER            -->
     <!-- ======================= -->
     <div id="userPage" class="hidden min-h-screen flex flex-col items-center py-8 p-4">
@@ -236,22 +264,35 @@
     <!-- ======================= -->
     <div id="dashboardPage" class="hidden min-h-screen flex flex-col p-4 md:p-8">
         <div class="max-w-screen-xl mx-auto w-full bg-white p-6 md:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-100 pb-6">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-100 pb-6 gap-4">
                 <div>
                     <h2 id="judulDashboard" class="text-2xl font-extrabold text-slate-800">Dashboard</h2>
                     <p class="text-sm text-slate-500 mt-1">Selamat datang, <span id="namaDashboardSapaan" class="font-bold text-indigo-600"></span></p>
                 </div>
-                <div class="mt-4 md:mt-0 flex flex-wrap gap-3">
+                <div class="flex flex-wrap gap-3 items-center">
+                    <!-- Tombol Ubah Email Khusus SPV -->
+                    <button id="btnGantiEmailSPV" onclick="bukaModalGantiEmail()" class="hidden bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all items-center gap-2">
+                        Ubah Email
+                    </button>
                     <button id="btnPindahPresensi" onclick="tampilkanHalaman('userPage')" class="hidden bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
-                        <span></span> Buka Presensi / Log Saya
+                        Buka Presensi / Log Saya
                     </button>
                     <button onclick="downloadExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
-                        <span></span> Download Excel
+                        Download Excel
                     </button>
                     <button onclick="logout()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
                         Logout
                     </button>
                 </div>
+            </div>
+
+            <!-- TOOLBAR FILTER STATUS (Khusus SPV) -->
+            <div id="filterContainerSPV" class="hidden mb-6 flex flex-wrap items-center gap-2 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wide mr-2">Filter Status:</span>
+                <button onclick="setFilterStatus('all')" id="filter-all" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition-all shadow-sm">Semua</button>
+                <button onclick="setFilterStatus('pending')" id="filter-pending" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 hover:bg-slate-200/60 border border-slate-200 transition-all">Belum Di-approve</button>
+                <button onclick="setFilterStatus('approved')" id="filter-approved" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 hover:bg-slate-200/60 border border-slate-200 transition-all">Sudah Di-approve</button>
+                <button onclick="setFilterStatus('rejected')" id="filter-rejected" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 hover:bg-slate-200/60 border border-slate-200 transition-all">Ditolak</button>
             </div>
 
             <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -328,6 +369,22 @@
             emailjs.init(EMAILJS_PUBLIC_KEY);
         } catch (e) {
             console.warn("EmailJS gagal diinisialisasi:", e);
+        }
+
+        let currentFilterStatus = 'all';
+
+        function setFilterStatus(status) {
+            currentFilterStatus = status;
+            ['all', 'pending', 'approved', 'rejected'].forEach(s => {
+                const btn = document.getElementById(`filter-${s}`);
+                if (!btn) return;
+                if (s === status) {
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition-all shadow-sm";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 hover:bg-slate-200/60 border border-slate-200 transition-all";
+                }
+            });
+            tampilkanTabelDashboard();
         }
 
         // FUNGSI GANTI TAB USER
@@ -432,7 +489,6 @@
             appId: "1:1085800121171:web:9a389631a46c6d74dbd7a6"
         };
         
-        // Cek inisialisasi agar tidak double init
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
@@ -456,7 +512,6 @@
             return `${day}/${month}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
         }
 
-        // PENANGANAN AUTH STATE YANG DIPERKUAT (Mencegah Logout Otomatis jika Doc Users Belum Ada)
         auth.onAuthStateChanged(async (user) => {
             if (user) {
                 try {
@@ -466,7 +521,6 @@
                     if (doc.exists) {
                         currentUserData = doc.data();
                     } else {
-                        // Buat otomatis profil default jika belum ada di koleksi users
                         currentUserData = {
                             nama: user.email.split('@')[0],
                             email: user.email,
@@ -497,16 +551,24 @@
             if (!currentUserData) return;
             const btnKeDashboard = document.getElementById("btnKeDashboard");
             const btnPindahPresensi = document.getElementById("btnPindahPresensi");
+            const btnGantiEmailSPV = document.getElementById("btnGantiEmailSPV");
+            const filterContainerSPV = document.getElementById("filterContainerSPV");
             const teksRoleUser = document.getElementById("teksRoleUser");
 
             if (currentUserData.role === "admin") {
                 tampilkanHalaman("dashboardPage");
                 btnPindahPresensi.classList.remove("hidden");
                 btnKeDashboard.classList.remove("hidden");
+                btnGantiEmailSPV.classList.remove("flex"); 
+                btnGantiEmailSPV.classList.add("hidden");
+                filterContainerSPV.classList.add("hidden");
                 teksRoleUser.innerText = "Halo, Administrator";
             } else if (currentUserData.role === "spv") {
                 tampilkanHalaman("dashboardPage");
                 btnPindahPresensi.classList.add("hidden");
+                btnGantiEmailSPV.classList.remove("hidden");
+                btnGantiEmailSPV.classList.add("flex");
+                filterContainerSPV.classList.remove("hidden");
             } else {
                 tampilkanHalaman("userPage");
                 btnKeDashboard.classList.add("hidden");
@@ -518,6 +580,57 @@
             document.getElementById("namaUserSapaan").innerText = currentUserData.nama || 'User';
             document.getElementById("inisialUser").innerText = (currentUserData.nama || 'U').charAt(0).toUpperCase();
         }
+
+        // FITUR GANTI EMAIL SPV
+        function bukaModalGantiEmail() {
+            document.getElementById("modalGantiEmail").classList.remove("hidden");
+            document.getElementById("formGantiEmail").reset();
+            document.getElementById("emailErrorMsg").classList.add("hidden");
+            document.getElementById("emailSuccessMsg").classList.add("hidden");
+        }
+        function tutupModalGantiEmail() {
+            document.getElementById("modalGantiEmail").classList.add("hidden");
+        }
+
+        document.getElementById("formGantiEmail").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const emailBaru = document.getElementById("email_baru").value;
+            const passwordLama = document.getElementById("email_password_konfirmasi").value;
+            const errEl = document.getElementById("emailErrorMsg");
+            const succEl = document.getElementById("emailSuccessMsg");
+
+            errEl.classList.add("hidden");
+            succEl.classList.add("hidden");
+
+            const user = auth.currentUser;
+            if (!user) {
+                errEl.innerText = "Sesi habis, silakan login ulang.";
+                errEl.classList.remove("hidden");
+                return;
+            }
+
+            try {
+                // 1. Re-authenticate user
+                const credential = firebase.auth.EmailAuthProvider.credential(user.email, passwordLama);
+                await user.reauthenticateWithCredential(credential);
+
+                // 2. Update email di Firebase Authentication
+                await user.updateEmail(emailBaru);
+
+                // 3. Update email di collection users Firestore
+                await db.collection("users").doc(user.uid).update({ email: emailBaru });
+                currentUserData.email = emailBaru;
+
+                succEl.innerText = "✅ Email berhasil diperbarui!";
+                succEl.classList.remove("hidden");
+                setTimeout(() => {
+                    tutupModalGantiEmail();
+                }, 2000);
+            } catch (error) {
+                errEl.innerText = "Gagal mengubah email: " + error.message;
+                errEl.classList.remove("hidden");
+            }
+        });
 
         function loadUserHistory() {
             if (!currentUserData) return;
@@ -658,7 +771,6 @@
                 });
         });
 
-        // FUNGSI KIRIM EMAIL NOTIFIKASI KE SPV
         async function kirimEmailKeSPV(targetLevel, dataTimesheet) {
             try {
                 const spvQuery = await db.collection("users")
@@ -694,7 +806,6 @@
             }
         }
 
-        // FORM USER TIMESHEET FIREBASE
         document.getElementById("forkliftForm").addEventListener("submit", function(e) {
             e.preventDefault();
             const msg = document.getElementById("statusMessage");
@@ -736,7 +847,6 @@
                 msg.innerText = "✅ Timesheet Berhasil Dikirim ke Cloud & Notifikasi Email Diproses!"; 
                 msg.classList.remove("hidden");
 
-                // KIRIM EMAIL KE SPV LEVEL 1
                 kirimEmailKeSPV(1, dataBaru);
 
                 setTimeout(() => { msg.classList.add("hidden"); switchTab('absen'); }, 3000);
@@ -794,8 +904,8 @@
             new QRCode(el, { text: text, width: 45, height: 45, colorDark : "#000000", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L });
         }
 
-        function cetakPDF(index) {
-            const data = logs[index];
+        function cetakPDF(indexGlobal) {
+            const data = logs[indexGlobal];
             document.getElementById('pdf_ts').innerText = data.no_timesheet || '-';
             document.getElementById('pdf_op').innerText = data.operator;
             document.getElementById('pdf_alat').innerText = data.alat;
@@ -880,7 +990,43 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500 text-sm">Belum ada data log pemakaian.</td></tr>`; return;
             }
 
-            logs.forEach((log, index) => {
+            // FILTER LOGIKA UNTUK SPV
+            let filteredLogs = logs.filter(log => {
+                if (currentUserData.role !== "spv") return true;
+
+                let levelSaya = Number(currentUserData.level) || 1;
+                let st1 = log.status_spv1 || (log.app_spv1 ? 'approved' : null);
+                let st2 = log.status_spv2 || (log.app_spv2 ? 'approved' : null);
+                let st3 = log.status_spv3 || (log.app_spv3 ? 'approved' : null);
+
+                let isRejected = (st1 === 'rejected' || st2 === 'rejected' || st3 === 'rejected');
+                let statusSayaSPV = levelSaya === 1 ? st1 : (levelSaya === 2 ? st2 : st3);
+                let isApprovedByMe = (statusSayaSPV === 'approved');
+
+                if (currentFilterStatus === 'pending') {
+                    // Belum di-approve oleh SPV yang sedang login (dan belum ditolak di level sebelumnya)
+                    let siapDiproses = false;
+                    if (!isRejected) {
+                        if (levelSaya === 1 && !st1) siapDiproses = true;
+                        else if (levelSaya === 2 && st1 === 'approved' && !st2) siapDiproses = true;
+                        else if (levelSaya === 3 && st2 === 'approved' && !st3) siapDiproses = true;
+                    }
+                    return siapDiproses;
+                } else if (currentFilterStatus === 'approved') {
+                    return isApprovedByMe;
+                } else if (currentFilterStatus === 'rejected') {
+                    return isRejected;
+                }
+                return true; // 'all'
+            });
+
+            if (filteredLogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500 text-sm italic">Tidak ada data yang sesuai dengan filter.</td></tr>`;
+                return;
+            }
+
+            filteredLogs.forEach((log) => {
+                const indexGlobal = logs.findIndex(item => item.id === log.id);
                 const tr = document.createElement("tr");
                 tr.className = "hover:bg-slate-50 transition-colors";
 
@@ -913,7 +1059,7 @@
                 if (currentUserData.role === "admin") {
                     aksiTbody = `
                         <td class="py-4 px-4 align-top">
-                            ${isFullyApproved ? `<button onclick="cetakPDF(${index})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition mb-2 block w-full">📄 Cetak PDF</button>` : `<span class="block text-slate-400 text-[10px] italic bg-slate-100 px-2 py-1.5 rounded mb-2 text-center">Belum Selesai</span>`}
+                            ${isFullyApproved ? `<button onclick="cetakPDF(${indexGlobal})" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition mb-2 block w-full">📄 Cetak PDF</button>` : `<span class="block text-slate-400 text-[10px] italic bg-slate-100 px-2 py-1.5 rounded mb-2 text-center">Belum Selesai</span>`}
                             <button onclick="deleteLog('${log.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition block w-full">🗑 Hapus</button>
                         </td>
                     `;
