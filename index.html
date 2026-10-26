@@ -1004,7 +1004,6 @@
                 let isApprovedByMe = (statusSayaSPV === 'approved');
 
                 if (currentFilterStatus === 'pending') {
-                    // Belum di-approve oleh SPV yang sedang login (dan belum ditolak di level sebelumnya)
                     let siapDiproses = false;
                     if (!isRejected) {
                         if (levelSaya === 1 && !st1) siapDiproses = true;
@@ -1017,7 +1016,7 @@
                 } else if (currentFilterStatus === 'rejected') {
                     return isRejected;
                 }
-                return true; // 'all'
+                return true; 
             });
 
             if (filteredLogs.length === 0) {
