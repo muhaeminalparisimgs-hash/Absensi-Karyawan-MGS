@@ -277,8 +277,28 @@
                     <button id="btnPindahPresensi" onclick="tampilkanHalaman('userPage')" class="hidden bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
                         Buka Presensi / Log Saya
                     </button>
+                    
+                    <!-- Search User & Rentang Tanggal Mulai Kerja (Khusus Admin) -->
+                    <div id="adminDownloadUserContainer" class="hidden flex-wrap items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                        <div class="relative w-40">
+                            <input type="text" id="inputSearchUser" oninput="filterUserOptions()" onfocus="bukaDropdownUser()" placeholder="🔍 Cari user..." autocomplete="off" class="w-full bg-white border border-slate-200 text-slate-700 text-xs rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-emerald-500">
+                            <div id="dropdownUserList" class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto z-50">
+                                <!-- Opsi user dimasukkan lewat JS -->
+                            </div>
+                        </div>
+
+                        <!-- Filter Tanggal Mulai Kerja -->
+                        <input type="text" id="filter_tgl_mulai_awal" placeholder="Tgl Mulai Dari" class="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-emerald-500 w-28 cursor-pointer">
+                        <span class="text-xs text-slate-400 font-bold">-</span>
+                        <input type="text" id="filter_tgl_mulai_akhir" placeholder="Tgl Mulai Sampai" class="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-emerald-500 w-28 cursor-pointer">
+
+                        <button onclick="downloadExcelPerUser()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm whitespace-nowrap">
+                            Download User
+                        </button>
+                    </div>
+
                     <button onclick="downloadExcel()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
-                        Download Excel
+                        Download Excel Semua
                     </button>
                     <button onclick="logout()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all">
                         Logout
@@ -358,9 +378,6 @@
     <!-- ======================= -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // ====================================================
-        // CONFIGURASI EMAILJS (Isi dengan kunci EmailJS Anda)
-        // ====================================================
         const EMAILJS_PUBLIC_KEY = "RBL4cWafscYvq26aO"; 
         const EMAILJS_SERVICE_ID = "service_otf7es5"; 
         const EMAILJS_TEMPLATE_ID = "template_r7z0a15"; 
@@ -372,6 +389,7 @@
         }
 
         let currentFilterStatus = 'all';
+        let allRegularUsers = [];
 
         function setFilterStatus(status) {
             currentFilterStatus = status;
@@ -387,7 +405,6 @@
             tampilkanTabelDashboard();
         }
 
-        // FUNGSI GANTI TAB USER
         function switchTab(tab) {
             const btnAbsen = document.getElementById('btnTabAbsen');
             const btnLog = document.getElementById('btnTabLog');
@@ -501,6 +518,10 @@
         flatpickr("#waktu_mulai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d M Y - H:i", time_24hr: true });
         flatpickr("#waktu_selesai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d M Y - H:i", time_24hr: true });
 
+        // Inisialisasi Filter Tanggal Mulai Kerja
+        flatpickr("#filter_tgl_mulai_awal", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
+        flatpickr("#filter_tgl_mulai_akhir", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
+
         function getWaktuInput24Jam() {
             const d = new Date();
             return d.toLocaleString("id-ID", { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
@@ -547,12 +568,72 @@
             document.getElementById(pageId).classList.remove("hidden");
         }
 
+        async function populateUserDropdown() {
+            try {
+                // Hanya mengambil user dengan role "user"[cite: 1]
+                const snapshot = await db.collection("users").where("role", "==", "user").get();
+                allRegularUsers = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.nama) allRegularUsers.push(data.nama);
+                });
+                
+                allRegularUsers.sort();
+                renderUserListOptions(allRegularUsers);
+            } catch (error) {
+                console.error("Gagal memuat daftar karyawan:", error);
+            }
+        }
+
+        function renderUserListOptions(userArray) {
+            const listEl = document.getElementById("dropdownUserList");
+            if (!listEl) return;
+            listEl.innerHTML = "";
+
+            if (userArray.length === 0) {
+                listEl.innerHTML = `<div class="p-2.5 text-xs text-slate-400 italic text-center">Tidak ada karyawan</div>`;
+                return;
+            }
+
+            userArray.forEach(nama => {
+                const item = document.createElement("div");
+                item.className = "px-3 py-2 text-xs text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer font-medium transition-colors border-b border-slate-50 last:border-0";
+                item.textContent = nama;
+                item.onclick = function() {
+                    document.getElementById("inputSearchUser").value = nama;
+                    listEl.classList.add("hidden");
+                };
+                listEl.appendChild(item);
+            });
+        }
+
+        function filterUserOptions() {
+            const query = document.getElementById("inputSearchUser").value.toLowerCase();
+            const filtered = allRegularUsers.filter(nama => nama.toLowerCase().includes(query));
+            renderUserListOptions(filtered);
+            document.getElementById("dropdownUserList").classList.remove("hidden");
+        }
+
+        function bukaDropdownUser() {
+            renderUserListOptions(allRegularUsers);
+            document.getElementById("dropdownUserList").classList.remove("hidden");
+        }
+
+        document.addEventListener("click", function(e) {
+            const container = document.getElementById("adminDownloadUserContainer");
+            const dropdown = document.getElementById("dropdownUserList");
+            if (container && dropdown && !container.contains(e.target)) {
+                dropdown.classList.add("hidden");
+            }
+        });
+
         function setupDashboardUI() {
             if (!currentUserData) return;
             const btnKeDashboard = document.getElementById("btnKeDashboard");
             const btnPindahPresensi = document.getElementById("btnPindahPresensi");
             const btnGantiEmailSPV = document.getElementById("btnGantiEmailSPV");
             const filterContainerSPV = document.getElementById("filterContainerSPV");
+            const adminDownloadUserContainer = document.getElementById("adminDownloadUserContainer");
             const teksRoleUser = document.getElementById("teksRoleUser");
 
             if (currentUserData.role === "admin") {
@@ -562,6 +643,13 @@
                 btnGantiEmailSPV.classList.remove("flex"); 
                 btnGantiEmailSPV.classList.add("hidden");
                 filterContainerSPV.classList.add("hidden");
+                
+                if (adminDownloadUserContainer) {
+                    adminDownloadUserContainer.classList.remove("hidden");
+                    adminDownloadUserContainer.classList.add("flex");
+                    populateUserDropdown();
+                }
+                
                 teksRoleUser.innerText = "Halo, Administrator";
             } else if (currentUserData.role === "spv") {
                 tampilkanHalaman("dashboardPage");
@@ -569,6 +657,10 @@
                 btnGantiEmailSPV.classList.remove("hidden");
                 btnGantiEmailSPV.classList.add("flex");
                 filterContainerSPV.classList.remove("hidden");
+                if (adminDownloadUserContainer) {
+                    adminDownloadUserContainer.classList.add("hidden");
+                    adminDownloadUserContainer.classList.remove("flex");
+                }
             } else {
                 tampilkanHalaman("userPage");
                 btnKeDashboard.classList.add("hidden");
@@ -610,22 +702,15 @@
             }
 
             try {
-                // 1. Re-authenticate user
                 const credential = firebase.auth.EmailAuthProvider.credential(user.email, passwordLama);
                 await user.reauthenticateWithCredential(credential);
-
-                // 2. Update email di Firebase Authentication
                 await user.updateEmail(emailBaru);
-
-                // 3. Update email di collection users Firestore
                 await db.collection("users").doc(user.uid).update({ email: emailBaru });
                 currentUserData.email = emailBaru;
 
                 succEl.innerText = "✅ Email berhasil diperbarui!";
                 succEl.classList.remove("hidden");
-                setTimeout(() => {
-                    tutupModalGantiEmail();
-                }, 2000);
+                setTimeout(() => { tutupModalGantiEmail(); }, 2000);
             } catch (error) {
                 errEl.innerText = "Gagal mengubah email: " + error.message;
                 errEl.classList.remove("hidden");
@@ -853,8 +938,9 @@
             }).catch(e => alert("Gagal kirim: " + e.message));
         });
 
+        // Diurutkan berdasarkan created_at dari Terbaru ke Terlama secara akurat
         function ambilDataLogsRealtime() {
-            db.collection("forklift_logs").orderBy("waktu_input", "desc")
+            db.collection("forklift_logs").orderBy("created_at", "desc")
                 .onSnapshot((snapshot) => {
                     logs = [];
                     snapshot.forEach((doc) => { logs.push({ id: doc.id, ...doc.data() }); });
@@ -990,7 +1076,6 @@
                 tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-500 text-sm">Belum ada data log pemakaian.</td></tr>`; return;
             }
 
-            // FILTER LOGIKA UNTUK SPV
             let filteredLogs = logs.filter(log => {
                 if (currentUserData.role !== "spv") return true;
 
@@ -1124,6 +1209,69 @@
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Log");
             XLSX.writeFile(workbook, "Laporan_Log_Karyawan.xlsx");
+        }
+
+        function downloadExcelPerUser() {
+            const selectedUser = document.getElementById("inputSearchUser").value.trim();
+            const tglMulaiAwal = document.getElementById("filter_tgl_mulai_awal").value;
+            const tglMulaiAkhir = document.getElementById("filter_tgl_mulai_akhir").value;
+
+            if (!selectedUser) {
+                alert("⚠️ Silakan pilih atau ketik nama karyawan terlebih dahulu!");
+                return;
+            }
+
+            const dateAwal = tglMulaiAwal ? new Date(tglMulaiAwal + "T00:00:00") : null;
+            const dateAkhir = tglMulaiAkhir ? new Date(tglMulaiAkhir + "T23:59:59") : null;
+
+            const filteredLogs = logs.filter(log => {
+                const matchUser = log.operator.toLowerCase() === selectedUser.toLowerCase();
+                if (!matchUser) return false;
+
+                if (dateAwal || dateAkhir) {
+                    if (!log.mulai) return false;
+                    const parts = log.mulai.split(" ");
+                    const dParts = parts[0].split("/");
+                    const logDate = new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00'}:00`);
+
+                    if (dateAwal && logDate < dateAwal) return false;
+                    if (dateAkhir && logDate > dateAkhir) return false;
+                }
+
+                return true;
+            });
+
+            if (filteredLogs.length === 0) {
+                alert(`Tidak ada data timesheet ditemukan untuk karyawan: ${selectedUser}` + (tglMulaiAwal || tglMulaiAkhir ? ` pada rentang tanggal tersebut.` : ``));
+                return;
+            }
+
+            let excelData = filteredLogs.map((log, index) => {
+                return {
+                    "No": index + 1, 
+                    "Waktu Input": log.waktu_input, 
+                    "Nama Operator": log.operator,
+                    "No Timesheet": log.no_timesheet || '-', 
+                    "Alat": log.alat, 
+                    "Mulai Kerja": log.mulai,
+                    "Selesai Kerja": log.selesai, 
+                    "Durasi": log.durasi, 
+                    "Keterangan": log.ket,
+                    "Status SPV 1": (log.status_spv1 || 'Belum').toUpperCase(), 
+                    "Catatan SPV 1": log.alasan_spv1 || "-",
+                    "Status SPV 2": (log.status_spv2 || 'Belum').toUpperCase(), 
+                    "Catatan SPV 2": log.alasan_spv2 || "-",
+                    "Status SPV 3": (log.status_spv3 || 'Belum').toUpperCase(), 
+                    "Catatan SPV 3": log.alasan_spv3 || "-"
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan User");
+
+            const safeName = selectedUser.replace(/[^a-zA-Z0-9]/g, "_");
+            XLSX.writeFile(workbook, `Laporan_Log_${safeName}.xlsx`);
         }
     </script>
 </body>
