@@ -293,7 +293,10 @@
                         <input type="text" id="filter_tgl_mulai_akhir" placeholder="Tgl Mulai Sampai" class="bg-white border border-slate-200 text-slate-700 text-xs rounded-lg px-2.5 py-2 outline-none focus:ring-2 focus:ring-emerald-500 w-28 cursor-pointer">
 
                         <button onclick="downloadExcelPerUser()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm whitespace-nowrap">
-                            Download User
+                            Download User (TS)
+                        </button>
+                        <button onclick="downloadExcelPresensiUser()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold transition-all shadow-sm whitespace-nowrap">
+                            Download User (Absen)
                         </button>
                     </div>
 
@@ -390,6 +393,7 @@
 
         let currentFilterStatus = 'all';
         let allRegularUsers = [];
+        let presensiLogs = []; // Array penampung data absensi
 
         function setFilterStatus(status) {
             currentFilterStatus = status;
@@ -551,6 +555,7 @@
                     }
                     setupDashboardUI();
                     ambilDataLogsRealtime();
+                    ambilDataPresensiRealtime();
                     loadUserHistory();
                 } catch (error) {
                     console.error("Gagal mengambil data user dari Firestore:", error);
@@ -570,7 +575,7 @@
 
         async function populateUserDropdown() {
             try {
-                // Hanya mengambil user dengan role "user"[cite: 1]
+                // Hanya mengambil user dengan role "user"[cite: 2]
                 const snapshot = await db.collection("users").where("role", "==", "user").get();
                 allRegularUsers = [];
                 snapshot.forEach(doc => {
@@ -949,6 +954,16 @@
                     }
                 });
         }
+
+        function ambilDataPresensiRealtime() {
+            db.collection("presensi_logs").orderBy("created_at", "desc")
+                .onSnapshot((snapshot) => {
+                    presensiLogs = [];
+                    snapshot.forEach((doc) => { 
+                        presensiLogs.push({ id: doc.id, ...doc.data() }); 
+                    });
+                });
+        }
         
         function deleteLog(docId) {
             if (confirm("⚠️ Apakah Anda yakin ingin menghapus data timesheet ini?")) {
@@ -1272,6 +1287,68 @@
 
             const safeName = selectedUser.replace(/[^a-zA-Z0-9]/g, "_");
             XLSX.writeFile(workbook, `Laporan_Log_${safeName}.xlsx`);
+        }
+
+        function downloadExcelPresensiUser() {
+            const selectedUser = document.getElementById("inputSearchUser").value.trim();
+            const tglMulaiAwal = document.getElementById("filter_tgl_mulai_awal").value;
+            const tglMulaiAkhir = document.getElementById("filter_tgl_mulai_akhir").value;
+
+            if (!selectedUser) {
+                alert("⚠️ Silakan pilih atau ketik nama karyawan terlebih dahulu!");
+                return;
+            }
+
+            const dateAwal = tglMulaiAwal ? new Date(tglMulaiAwal + "T00:00:00") : null;
+            const dateAkhir = tglMulaiAkhir ? new Date(tglMulaiAkhir + "T23:59:59") : null;
+
+            const filteredPresensi = presensiLogs.filter(log => {
+                const matchUser = log.nama && log.nama.toLowerCase() === selectedUser.toLowerCase();
+                if (!matchUser) return false;
+
+                if (dateAwal || dateAkhir) {
+                    let logDate = null;
+                    if (log.created_at) {
+                        logDate = new Date(log.created_at);
+                    } else if (log.waktu) {
+                        // fallback parse format dd/mm/yyyy hh:mm:ss
+                        const parts = log.waktu.split(" ");
+                        if (parts.length >= 1) {
+                            const dParts = parts[0].split("/");
+                            logDate = new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00:00'}`);
+                        }
+                    }
+
+                    if (logDate) {
+                        if (dateAwal && logDate < dateAwal) return false;
+                        if (dateAkhir && logDate > dateAkhir) return false;
+                    }
+                }
+
+                return true;
+            });
+
+            if (filteredPresensi.length === 0) {
+                alert(`Tidak ada data absensi ditemukan untuk karyawan: ${selectedUser}` + (tglMulaiAwal || tglMulaiAkhir ? ` pada rentang tanggal tersebut.` : ``));
+                return;
+            }
+
+            let excelData = filteredPresensi.map((log, index) => {
+                return {
+                    "No": index + 1,
+                    "Nama Karyawan": log.nama,
+                    "Tipe Presensi": log.tipe,
+                    "Lokasi Kantor": log.lokasi,
+                    "Waktu Tercatat": log.waktu
+                };
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Absensi");
+
+            const safeName = selectedUser.replace(/[^a-zA-Z0-9]/g, "_");
+            XLSX.writeFile(workbook, `Laporan_Absensi_${safeName}.xlsx`);
         }
     </script>
 </body>
