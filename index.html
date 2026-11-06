@@ -575,7 +575,6 @@
 
         async function populateUserDropdown() {
             try {
-                // Hanya mengambil user dengan role "user"[cite: 2]
                 const snapshot = await db.collection("users").where("role", "==", "user").get();
                 allRegularUsers = [];
                 snapshot.forEach(doc => {
@@ -943,7 +942,6 @@
             }).catch(e => alert("Gagal kirim: " + e.message));
         });
 
-        // Diurutkan berdasarkan created_at dari Terbaru ke Terlama secara akurat
         function ambilDataLogsRealtime() {
             db.collection("forklift_logs").orderBy("created_at", "desc")
                 .onSnapshot((snapshot) => {
@@ -1302,6 +1300,7 @@
             const dateAwal = tglMulaiAwal ? new Date(tglMulaiAwal + "T00:00:00") : null;
             const dateAkhir = tglMulaiAkhir ? new Date(tglMulaiAkhir + "T23:59:59") : null;
 
+            // Filter log presensi user terpilih
             const filteredPresensi = presensiLogs.filter(log => {
                 const matchUser = log.nama && log.nama.toLowerCase() === selectedUser.toLowerCase();
                 if (!matchUser) return false;
@@ -1311,7 +1310,6 @@
                     if (log.created_at) {
                         logDate = new Date(log.created_at);
                     } else if (log.waktu) {
-                        // fallback parse format dd/mm/yyyy hh:mm:ss
                         const parts = log.waktu.split(" ");
                         if (parts.length >= 1) {
                             const dParts = parts[0].split("/");
@@ -1324,7 +1322,6 @@
                         if (dateAkhir && logDate > dateAkhir) return false;
                     }
                 }
-
                 return true;
             });
 
@@ -1333,19 +1330,79 @@
                 return;
             }
 
-            let excelData = filteredPresensi.map((log, index) => {
-                return {
-                    "No": index + 1,
-                    "Nama Karyawan": log.nama,
-                    "Tipe Presensi": log.tipe,
-                    "Lokasi Kantor": log.lokasi,
-                    "Waktu Tercatat": log.waktu
-                };
+            // Helper untuk konversi tanggal ke format "16-Okt-26"
+            function formatTanggalCustom(dateObj) {
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                const mth = monthNames[dateObj.getMonth()];
+                const yr = String(dateObj.getFullYear()).slice(-2);
+                return `${day}-${mth}-${yr}`;
+            }
+
+            // Kelompokkan data Masuk, Keluar, dan Lokasi berdasarkan Tanggal
+            const rekapMap = {};
+
+            filteredPresensi.forEach(log => {
+                let dObj = null;
+                let jamStr = "";
+
+                if (log.created_at) {
+                    dObj = new Date(log.created_at);
+                    jamStr = `${String(dObj.getHours()).padStart(2, '0')}:${String(dObj.getMinutes()).padStart(2, '0')}:${String(dObj.getSeconds()).padStart(2, '0')}`;
+                } else if (log.waktu) {
+                    const parts = log.waktu.split(" ");
+                    jamStr = parts[1] || "-";
+                    const dParts = parts[0].split("/");
+                    if (dParts.length === 3) {
+                        dObj = new Date(parseInt(dParts[2], 10), parseInt(dParts[1], 10) - 1, parseInt(dParts[0], 10));
+                    }
+                }
+
+                if (!dObj || isNaN(dObj)) return;
+
+                const tglFormatted = formatTanggalCustom(dObj);
+                const sortValue = new Date(dObj.getFullYear(), dObj.getMonth(), dObj.getDate()).getTime();
+
+                if (!rekapMap[tglFormatted]) {
+                    rekapMap[tglFormatted] = { tgl: tglFormatted, jamMasuk: "-", jamKeluar: "-", lokasi: "-", sortKey: sortValue };
+                }
+
+                if (log.tipe === "Masuk") {
+                    rekapMap[tglFormatted].jamMasuk = jamStr;
+                    if (log.lokasi) rekapMap[tglFormatted].lokasi = log.lokasi;
+                } else if (log.tipe === "Keluar") {
+                    rekapMap[tglFormatted].jamKeluar = jamStr;
+                    if (log.lokasi && rekapMap[tglFormatted].lokasi === "-") {
+                        rekapMap[tglFormatted].lokasi = log.lokasi;
+                    }
+                }
             });
 
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            // Urutkan objek berdasarkan sortKey secara mutlak (Memperhatikan Tahun, Bulan, dan Hari dari terlama ke terbaru)
+            let sortedKeys = Object.keys(rekapMap).sort((a, b) => {
+                return rekapMap[a].sortKey - rekapMap[b].sortKey;
+            });
+
+            // Susun array data untuk Excel (Baris 1: Nama, Baris 2: Header Kolom dengan "TANGGAL", Baris berikutnya: Data urut dari terlama ke terbaru)
+            const excelRows = [
+                { "TANGGAL": `NAMA : ${selectedUser}`, "JAM MASUK": "", "JAM KELUAR": "", "LOKASI": "", "KETERANGAN": "" },
+                { "TANGGAL": "TANGGAL", "JAM MASUK": "JAM MASUK", "JAM KELUAR": "JAM KELUAR", "LOKASI": "LOKASI", "KETERANGAN": "KETERANGAN" }
+            ];
+
+            sortedKeys.forEach(key => {
+                const item = rekapMap[key];
+                excelRows.push({
+                    "TANGGAL": item.tgl,
+                    "JAM MASUK": item.jamMasuk,
+                    "JAM KELUAR": item.jamKeluar,
+                    "LOKASI": item.lokasi,
+                    "KETERANGAN": "" // Dibiarkan kosong sesuai permintaan
+                });
+            });
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows, { skipHeader: true });
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Absensi");
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absen");
 
             const safeName = selectedUser.replace(/[^a-zA-Z0-9]/g, "_");
             XLSX.writeFile(workbook, `Laporan_Absensi_${safeName}.xlsx`);
