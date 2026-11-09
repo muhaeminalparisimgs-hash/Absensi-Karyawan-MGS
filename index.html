@@ -1234,57 +1234,147 @@
                 return;
             }
 
-            const dateAwal = tglMulaiAwal ? new Date(tglMulaiAwal + "T00:00:00") : null;
-            const dateAkhir = tglMulaiAkhir ? new Date(tglMulaiAkhir + "T23:59:59") : null;
+            // Tentukan rentang tanggal
+            let dateAwal, dateAkhir;
+            
+            if (tglMulaiAwal && tglMulaiAkhir) {
+                dateAwal = new Date(tglMulaiAwal + "T00:00:00");
+                dateAkhir = new Date(tglMulaiAkhir + "T23:59:59");
+            } else {
+                let minTime = Date.now();
+                let maxTime = Date.now();
+                
+                const userLogs = logs.filter(log => log.operator && log.operator.toLowerCase() === selectedUser.toLowerCase());
+                if (userLogs.length > 0) {
+                    userLogs.forEach(log => {
+                        let t = log.created_at || new Date(log.mulai).getTime();
+                        if (t < minTime) minTime = t;
+                        if (t > maxTime) maxTime = t;
+                    });
+                    dateAwal = new Date(minTime);
+                    dateAwal.setHours(0, 0, 0, 0);
+                    dateAkhir = new Date(maxTime);
+                    dateAkhir.setHours(23, 59, 59, 999);
+                } else {
+                    dateAwal = new Date();
+                    dateAwal.setDate(1); 
+                    dateAwal.setHours(0, 0, 0, 0);
+                    dateAkhir = new Date();
+                    dateAkhir.setHours(23, 59, 59, 999);
+                }
+            }
 
+            // Filter log timesheet user terpilih dalam rentang waktu
             const filteredLogs = logs.filter(log => {
-                const matchUser = log.operator.toLowerCase() === selectedUser.toLowerCase();
+                const matchUser = log.operator && log.operator.toLowerCase() === selectedUser.toLowerCase();
                 if (!matchUser) return false;
 
-                if (dateAwal || dateAkhir) {
-                    if (!log.mulai) return false;
-                    const parts = log.mulai.split(" ");
-                    const dParts = parts[0].split("/");
-                    const logDate = new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00'}:00`);
+                if (!log.mulai) return false;
+                const parts = log.mulai.split(" ");
+                const dParts = parts[0].split("/");
+                const logDate = new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00'}:00`);
 
-                    if (dateAwal && logDate < dateAwal) return false;
-                    if (dateAkhir && logDate > dateAkhir) return false;
-                }
-
+                if (logDate < dateAwal || logDate > dateAkhir) return false;
                 return true;
             });
 
-            if (filteredLogs.length === 0) {
-                alert(`Tidak ada data timesheet ditemukan untuk karyawan: ${selectedUser}` + (tglMulaiAwal || tglMulaiAkhir ? ` pada rentang tanggal tersebut.` : ``));
-                return;
+            // Helper untuk konversi tanggal ke format "16-Okt-26"
+            function formatTanggalCustom(dateObj) {
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
+                const mth = monthNames[dateObj.getMonth()];
+                const yr = String(dateObj.getFullYear()).slice(-2);
+                return `${day}-${mth}-${yr}`;
             }
 
-            let excelData = filteredLogs.map((log, index) => {
-                return {
-                    "No": index + 1, 
-                    "Waktu Input": log.waktu_input, 
-                    "Nama Operator": log.operator,
-                    "No Timesheet": log.no_timesheet || '-', 
-                    "Alat": log.alat, 
-                    "Mulai Kerja": log.mulai,
-                    "Selesai Kerja": log.selesai, 
-                    "Durasi": log.durasi, 
-                    "Keterangan": log.ket,
-                    "Status SPV 1": (log.status_spv1 || 'Belum').toUpperCase(), 
-                    "Catatan SPV 1": log.alasan_spv1 || "-",
-                    "Status SPV 2": (log.status_spv2 || 'Belum').toUpperCase(), 
-                    "Catatan SPV 2": log.alasan_spv2 || "-",
-                    "Status SPV 3": (log.status_spv3 || 'Belum').toUpperCase(), 
-                    "Catatan SPV 3": log.alasan_spv3 || "-"
-                };
+            const rekapMap = {};
+            filteredLogs.forEach(log => {
+                if (!log.mulai) return;
+                const parts = log.mulai.split(" ");
+                const dParts = parts[0].split("/");
+                if (dParts.length !== 3) return;
+
+                const dObj = new Date(parseInt(dParts[2], 10), parseInt(dParts[1], 10) - 1, parseInt(dParts[0], 10));
+                const yyyy = dObj.getFullYear();
+                const mm = String(dObj.getMonth() + 1).padStart(2, '0');
+                const dd = String(dObj.getDate()).padStart(2, '0');
+                const dateKey = `${yyyy}-${mm}-${dd}`;
+
+                if (!rekapMap[dateKey]) {
+                    rekapMap[dateKey] = [];
+                }
+                rekapMap[dateKey].push(log);
             });
 
-            const worksheet = XLSX.utils.json_to_sheet(excelData);
+            // GENERATE FULL KALENDER (HARI PER HARI DARI TANGGAL AWAL SAMPAI AKHIR) - TANPA KOLOM NAMA OPERATOR
+            const excelRows = [
+                { "No": `NAMA : ${selectedUser}`, "TANGGAL": "", "No Timesheet": "", "Alat": "", "Mulai Kerja": "", "Selesai Kerja": "", "Durasi": "", "Keterangan": "", "Status SPV 1": "", "Catatan SPV 1": "", "Status SPV 2": "", "Catatan SPV 2": "", "Status SPV 3": "", "Catatan SPV 3": "" },
+                { "No": "No", "TANGGAL": "TANGGAL", "No Timesheet": "No Timesheet", "Alat": "Alat", "Mulai Kerja": "Mulai Kerja", "Selesai Kerja": "Selesai Kerja", "Durasi": "Durasi", "Keterangan": "Keterangan", "Status SPV 1": "Status SPV 1", "Catatan SPV 1": "Catatan SPV 1", "Status SPV 2": "Status SPV 2", "Catatan SPV 2": "Catatan SPV 2", "Status SPV 3": "Status SPV 3", "Catatan SPV 3": "Catatan SPV 3" }
+            ];
+
+            let currLoopDate = new Date(dateAwal);
+            currLoopDate.setHours(0, 0, 0, 0);
+            
+            let endLoopDate = new Date(dateAkhir);
+            endLoopDate.setHours(0, 0, 0, 0);
+
+            let rowCounter = 1;
+
+            while (currLoopDate <= endLoopDate) {
+                const yyyy = currLoopDate.getFullYear();
+                const mm = String(currLoopDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(currLoopDate.getDate()).padStart(2, '0');
+                const dateKey = `${yyyy}-${mm}-${dd}`;
+                const tglFormatted = formatTanggalCustom(currLoopDate);
+
+                if (rekapMap[dateKey] && rekapMap[dateKey].length > 0) {
+                    rekapMap[dateKey].forEach(log => {
+                        excelRows.push({
+                            "No": rowCounter++,
+                            "TANGGAL": tglFormatted,
+                            "No Timesheet": log.no_timesheet || '-',
+                            "Alat": log.alat || "-",
+                            "Mulai Kerja": log.mulai || "-",
+                            "Selesai Kerja": log.selesai || "-",
+                            "Durasi": log.durasi || "-",
+                            "Keterangan": log.ket || "",
+                            "Status SPV 1": (log.status_spv1 || 'Belum').toUpperCase(),
+                            "Catatan SPV 1": log.alasan_spv1 || "-",
+                            "Status SPV 2": (log.status_spv2 || 'Belum').toUpperCase(),
+                            "Catatan SPV 2": log.alasan_spv2 || "-",
+                            "Status SPV 3": (log.status_spv3 || 'Belum').toUpperCase(),
+                            "Catatan SPV 3": log.alasan_spv3 || "-"
+                        });
+                    });
+                } else {
+                    // Tanggal merah / libur / tidak ada timesheet dimuat dengan kalender berurutan, data kerja kosong, dan keterangan kosong
+                    excelRows.push({
+                        "No": rowCounter++,
+                        "TANGGAL": tglFormatted,
+                        "No Timesheet": "-",
+                        "Alat": "-",
+                        "Mulai Kerja": "-",
+                        "Selesai Kerja": "-",
+                        "Durasi": "-",
+                        "Keterangan": "",
+                        "Status SPV 1": "-",
+                        "Catatan SPV 1": "-",
+                        "Status SPV 2": "-",
+                        "Catatan SPV 2": "-",
+                        "Status SPV 3": "-",
+                        "Catatan SPV 3": "-"
+                    });
+                }
+
+                currLoopDate.setDate(currLoopDate.getDate() + 1);
+            }
+
+            const worksheet = XLSX.utils.json_to_sheet(excelRows, { skipHeader: true });
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan User");
 
             const safeName = selectedUser.replace(/[^a-zA-Z0-9]/g, "_");
-            XLSX.writeFile(workbook, `Laporan_Log_${safeName}.xlsx`);
+            XLSX.writeFile(workbook, `Laporan_Timesheet_FullKalender_${safeName}.xlsx`);
         }
 
         function downloadExcelPresensiUser() {
