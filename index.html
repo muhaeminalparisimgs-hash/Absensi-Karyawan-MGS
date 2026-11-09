@@ -1297,38 +1297,57 @@
                 return;
             }
 
-            const dateAwal = tglMulaiAwal ? new Date(tglMulaiAwal + "T00:00:00") : null;
-            const dateAkhir = tglMulaiAkhir ? new Date(tglMulaiAkhir + "T23:59:59") : null;
+            // Tentukan rentang tanggal
+            let dateAwal, dateAkhir;
+            
+            if (tglMulaiAwal && tglMulaiAkhir) {
+                dateAwal = new Date(tglMulaiAwal + "T00:00:00");
+                dateAkhir = new Date(tglMulaiAkhir + "T23:59:59");
+            } else {
+                let minTime = Date.now();
+                let maxTime = Date.now();
+                
+                const userPresensi = presensiLogs.filter(log => log.nama && log.nama.toLowerCase() === selectedUser.toLowerCase());
+                if (userPresensi.length > 0) {
+                    userPresensi.forEach(log => {
+                        let t = log.created_at || new Date(log.waktu).getTime();
+                        if (t < minTime) minTime = t;
+                        if (t > maxTime) maxTime = t;
+                    });
+                    dateAwal = new Date(minTime);
+                    dateAwal.setHours(0, 0, 0, 0);
+                    dateAkhir = new Date(maxTime);
+                    dateAkhir.setHours(23, 59, 59, 999);
+                } else {
+                    dateAwal = new Date();
+                    dateAwal.setDate(1); 
+                    dateAwal.setHours(0, 0, 0, 0);
+                    dateAkhir = new Date();
+                    dateAkhir.setHours(23, 59, 59, 999);
+                }
+            }
 
-            // Filter log presensi user terpilih
+            // Filter log presensi user terpilih dalam rentang waktu
             const filteredPresensi = presensiLogs.filter(log => {
                 const matchUser = log.nama && log.nama.toLowerCase() === selectedUser.toLowerCase();
                 if (!matchUser) return false;
 
-                if (dateAwal || dateAkhir) {
-                    let logDate = null;
-                    if (log.created_at) {
-                        logDate = new Date(log.created_at);
-                    } else if (log.waktu) {
-                        const parts = log.waktu.split(" ");
-                        if (parts.length >= 1) {
-                            const dParts = parts[0].split("/");
-                            logDate = new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00:00'}`);
-                        }
+                let logDate = null;
+                if (log.created_at) {
+                    logDate = new Date(log.created_at);
+                } else if (log.waktu) {
+                    const parts = log.waktu.split(" ");
+                    if (parts.length >= 1) {
+                        const dParts = parts[0].split("/");
+                        logDate = new Date(`${dParts[2]}-${dParts[1]}-${dParts[0]}T${parts[1] || '00:00:00'}`);
                     }
+                }
 
-                    if (logDate) {
-                        if (dateAwal && logDate < dateAwal) return false;
-                        if (dateAkhir && logDate > dateAkhir) return false;
-                    }
+                if (logDate) {
+                    if (logDate < dateAwal || logDate > dateAkhir) return false;
                 }
                 return true;
             });
-
-            if (filteredPresensi.length === 0) {
-                alert(`Tidak ada data absensi ditemukan untuk karyawan: ${selectedUser}` + (tglMulaiAwal || tglMulaiAkhir ? ` pada rentang tanggal tersebut.` : ``));
-                return;
-            }
 
             // Helper untuk konversi tanggal ke format "16-Okt-26"
             function formatTanggalCustom(dateObj) {
@@ -1339,9 +1358,8 @@
                 return `${day}-${mth}-${yr}`;
             }
 
-            // Kelompokkan data Masuk, Keluar, dan Lokasi berdasarkan Tanggal
+            // Masukkan data presensi ke dalam map berdasarkan key tanggal "YYYY-MM-DD"
             const rekapMap = {};
-
             filteredPresensi.forEach(log => {
                 let dObj = null;
                 let jamStr = "";
@@ -1360,52 +1378,79 @@
 
                 if (!dObj || isNaN(dObj)) return;
 
-                const tglFormatted = formatTanggalCustom(dObj);
-                const sortValue = new Date(dObj.getFullYear(), dObj.getMonth(), dObj.getDate()).getTime();
+                const yyyy = dObj.getFullYear();
+                const mm = String(dObj.getMonth() + 1).padStart(2, '0');
+                const dd = String(dObj.getDate()).padStart(2, '0');
+                const dateKey = `${yyyy}-${mm}-${dd}`;
 
-                if (!rekapMap[tglFormatted]) {
-                    rekapMap[tglFormatted] = { tgl: tglFormatted, jamMasuk: "-", jamKeluar: "-", lokasi: "-", sortKey: sortValue };
+                if (!rekapMap[dateKey]) {
+                    rekapMap[dateKey] = { 
+                        tglFormatted: formatTanggalCustom(dObj), 
+                        jamMasuk: "-", 
+                        jamKeluar: "-", 
+                        lokasi: "-", 
+                        sortKey: new Date(yyyy, dObj.getMonth(), dd).getTime() 
+                    };
                 }
 
                 if (log.tipe === "Masuk") {
-                    rekapMap[tglFormatted].jamMasuk = jamStr;
-                    if (log.lokasi) rekapMap[tglFormatted].lokasi = log.lokasi;
+                    rekapMap[dateKey].jamMasuk = jamStr;
+                    if (log.lokasi) rekapMap[dateKey].lokasi = log.lokasi;
                 } else if (log.tipe === "Keluar") {
-                    rekapMap[tglFormatted].jamKeluar = jamStr;
-                    if (log.lokasi && rekapMap[tglFormatted].lokasi === "-") {
-                        rekapMap[tglFormatted].lokasi = log.lokasi;
+                    rekapMap[dateKey].jamKeluar = jamStr;
+                    if (log.lokasi && rekapMap[dateKey].lokasi === "-") {
+                        rekapMap[dateKey].lokasi = log.lokasi;
                     }
                 }
             });
 
-            // Urutkan objek berdasarkan sortKey secara mutlak (Memperhatikan Tahun, Bulan, dan Hari dari terlama ke terbaru)
-            let sortedKeys = Object.keys(rekapMap).sort((a, b) => {
-                return rekapMap[a].sortKey - rekapMap[b].sortKey;
-            });
-
-            // Susun array data untuk Excel (Baris 1: Nama, Baris 2: Header Kolom dengan "TANGGAL", Baris berikutnya: Data urut dari terlama ke terbaru)
+            // GENERATE FULL KALENDER (HARI PER HARI DARI TANGGAL AWAL SAMPAI AKHIR)
             const excelRows = [
                 { "TANGGAL": `NAMA : ${selectedUser}`, "JAM MASUK": "", "JAM KELUAR": "", "LOKASI": "", "KETERANGAN": "" },
                 { "TANGGAL": "TANGGAL", "JAM MASUK": "JAM MASUK", "JAM KELUAR": "JAM KELUAR", "LOKASI": "LOKASI", "KETERANGAN": "KETERANGAN" }
             ];
 
-            sortedKeys.forEach(key => {
-                const item = rekapMap[key];
-                excelRows.push({
-                    "TANGGAL": item.tgl,
-                    "JAM MASUK": item.jamMasuk,
-                    "JAM KELUAR": item.jamKeluar,
-                    "LOKASI": item.lokasi,
-                    "KETERANGAN": "" // Dibiarkan kosong sesuai permintaan
-                });
-            });
+            let currLoopDate = new Date(dateAwal);
+            currLoopDate.setHours(0, 0, 0, 0);
+            
+            let endLoopDate = new Date(dateAkhir);
+            endLoopDate.setHours(0, 0, 0, 0);
+
+            while (currLoopDate <= endLoopDate) {
+                const yyyy = currLoopDate.getFullYear();
+                const mm = String(currLoopDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(currLoopDate.getDate()).padStart(2, '0');
+                const dateKey = `${yyyy}-${mm}-${dd}`;
+                const tglFormatted = formatTanggalCustom(currLoopDate);
+
+                if (rekapMap[dateKey]) {
+                    excelRows.push({
+                        "TANGGAL": tglFormatted,
+                        "JAM MASUK": rekapMap[dateKey].jamMasuk,
+                        "JAM KELUAR": rekapMap[dateKey].jamKeluar,
+                        "LOKASI": rekapMap[dateKey].lokasi,
+                        "KETERANGAN": ""
+                    });
+                } else {
+                    // Tanggal merah / libur / tidak absen dimuat dengan jam kosong & keterangan kosong
+                    excelRows.push({
+                        "TANGGAL": tglFormatted,
+                        "JAM MASUK": "-",
+                        "JAM KELUAR": "-",
+                        "LOKASI": "-",
+                        "KETERANGAN": ""
+                    });
+                }
+
+                currLoopDate.setDate(currLoopDate.getDate() + 1);
+            }
 
             const worksheet = XLSX.utils.json_to_sheet(excelRows, { skipHeader: true });
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absen");
 
             const safeName = selectedUser.replace(/[^a-zA-Z0-9]/g, "_");
-            XLSX.writeFile(workbook, `Laporan_Absensi_${safeName}.xlsx`);
+            XLSX.writeFile(workbook, `Laporan_Absensi_FullKalender_${safeName}.xlsx`);
         }
     </script>
 </body>
