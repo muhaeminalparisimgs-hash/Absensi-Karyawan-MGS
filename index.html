@@ -393,7 +393,18 @@
 
         let currentFilterStatus = 'all';
         let allRegularUsers = [];
-        let presensiLogs = []; // Array penampung data absensi
+        let presensiLogs = [];
+        let unsubscribeLogs = null;
+        let unsubscribePresensi = null;
+        let unsubscribeUserAbsen = null;
+        let unsubscribeUserTs = null;
+
+        function bersihkanListener() {
+            if (unsubscribeLogs) { unsubscribeLogs(); unsubscribeLogs = null; }
+            if (unsubscribePresensi) { unsubscribePresensi(); unsubscribePresensi = null; }
+            if (unsubscribeUserAbsen) { unsubscribeUserAbsen(); unsubscribeUserAbsen = null; }
+            if (unsubscribeUserTs) { unsubscribeUserTs(); unsubscribeUserTs = null; }
+        }
 
         function setFilterStatus(status) {
             currentFilterStatus = status;
@@ -522,7 +533,6 @@
         flatpickr("#waktu_mulai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d M Y - H:i", time_24hr: true });
         flatpickr("#waktu_selesai", { enableTime: true, dateFormat: "Y-m-d H:i", altInput: true, altFormat: "d M Y - H:i", time_24hr: true });
 
-        // Inisialisasi Filter Tanggal Mulai Kerja
         flatpickr("#filter_tgl_mulai_awal", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
         flatpickr("#filter_tgl_mulai_akhir", { dateFormat: "Y-m-d", altInput: true, altFormat: "d/m/Y" });
 
@@ -538,6 +548,7 @@
         }
 
         auth.onAuthStateChanged(async (user) => {
+            bersihkanListener();
             if (user) {
                 try {
                     const docRef = db.collection("users").doc(user.uid);
@@ -724,7 +735,10 @@
         function loadUserHistory() {
             if (!currentUserData) return;
 
-            db.collection("presensi_logs")
+            if (unsubscribeUserAbsen) { unsubscribeUserAbsen(); unsubscribeUserAbsen = null; }
+            if (unsubscribeUserTs) { unsubscribeUserTs(); unsubscribeUserTs = null; }
+
+            unsubscribeUserAbsen = db.collection("presensi_logs")
               .where("nama", "==", currentUserData.nama)
               .onSnapshot(snapshot => {
                   const container = document.getElementById("listHistoryAbsen");
@@ -755,7 +769,7 @@
                   });
               });
 
-            db.collection("forklift_logs")
+            unsubscribeUserTs = db.collection("forklift_logs")
               .where("operator", "==", currentUserData.nama)
               .onSnapshot(snapshot => {
                   const container = document.getElementById("listHistoryLog");
@@ -830,7 +844,10 @@
                 });
         });
 
-        function logout() { auth.signOut(); }
+        function logout() {
+            bersihkanListener();
+            auth.signOut();
+        }
         function bukaModalRegister() { document.getElementById('registerModal').classList.remove('hidden'); }
         function tutupModalRegister() { document.getElementById('registerModal').classList.add('hidden'); }
 
@@ -943,7 +960,14 @@
         });
 
         function ambilDataLogsRealtime() {
-            db.collection("forklift_logs").orderBy("created_at", "desc")
+            if (unsubscribeLogs) { unsubscribeLogs(); unsubscribeLogs = null; }
+            if (!currentUserData || (currentUserData.role !== "admin" && currentUserData.role !== "spv")) {
+                return;
+            }
+
+            unsubscribeLogs = db.collection("forklift_logs")
+                .orderBy("created_at", "desc")
+                .limit(50)
                 .onSnapshot((snapshot) => {
                     logs = [];
                     snapshot.forEach((doc) => { logs.push({ id: doc.id, ...doc.data() }); });
@@ -954,13 +978,8 @@
         }
 
         function ambilDataPresensiRealtime() {
-            db.collection("presensi_logs").orderBy("created_at", "desc")
-                .onSnapshot((snapshot) => {
-                    presensiLogs = [];
-                    snapshot.forEach((doc) => { 
-                        presensiLogs.push({ id: doc.id, ...doc.data() }); 
-                    });
-                });
+            if (unsubscribePresensi) { unsubscribePresensi(); unsubscribePresensi = null; }
+            presensiLogs = [];
         }
         
         function deleteLog(docId) {
@@ -1102,13 +1121,7 @@
                 let isApprovedByMe = (statusSayaSPV === 'approved');
 
                 if (currentFilterStatus === 'pending') {
-                    let siapDiproses = false;
-                    if (!isRejected) {
-                        if (levelSaya === 1 && !st1) siapDiproses = true;
-                        else if (levelSaya === 2 && st1 === 'approved' && !st2) siapDiproses = true;
-                        else if (levelSaya === 3 && st2 === 'approved' && !st3) siapDiproses = true;
-                    }
-                    return siapDiproses;
+                    return !isRejected && !statusSayaSPV;
                 } else if (currentFilterStatus === 'approved') {
                     return isApprovedByMe;
                 } else if (currentFilterStatus === 'rejected') {
@@ -1162,21 +1175,14 @@
                     `;
                 } else if (currentUserData.role === "spv") {
                     let levelSaya = Number(currentUserData.level) || 1;
-                    let bisaApprove = false; let pesanStatus = "Selesai";
-                    if (!isRejected) {
-                        if (levelSaya === 1 && !st1) bisaApprove = true;
-                        else if (levelSaya === 2 && st1 === 'approved' && !st2) bisaApprove = true;
-                        else if (levelSaya === 3 && st2 === 'approved' && !st3) bisaApprove = true;
-                    }
-                    let sudahDiproses = (levelSaya === 1 && st1) || (levelSaya === 2 && st2) || (levelSaya === 3 && st3);
+                    let statusSayaSPV = levelSaya === 1 ? st1 : (levelSaya === 2 ? st2 : st3);
+                    let sudahDiproses = Boolean(statusSayaSPV);
+                    let bisaApprove = !isRejected && !sudahDiproses;
 
                     if (sudahDiproses) {
                         aksiTbody = `<td class="py-4 px-4 align-top"><span class="text-emerald-700 text-[11px] font-semibold bg-emerald-50 px-2.5 py-1.5 rounded-lg border border-emerald-200 block text-center">✅ Sudah Proses</span></td>`;
                     } else if (!bisaApprove) {
-                        if (isRejected) pesanStatus = "Ditolak (Stop)";
-                        else if (levelSaya === 2 && !st1) pesanStatus = "Tunggu SPV 1";
-                        else if (levelSaya === 3 && (!st1 || !st2)) pesanStatus = "Tunggu SPV 1&2";
-                        aksiTbody = `<td class="py-4 px-4 align-top"><span class="text-amber-700 text-[11px] font-semibold bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-200 block text-center">${pesanStatus}</span></td>`;
+                        aksiTbody = `<td class="py-4 px-4 align-top"><span class="text-rose-700 text-[11px] font-semibold bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 block text-center">Ditolak</span></td>`;
                     } else {
                         aksiTbody = `
                         <td class="py-4 px-4 align-top space-y-2">
@@ -1206,9 +1212,18 @@
             });
         }
 
-        function downloadExcel() {
-            if (logs.length === 0) { alert("Tidak ada data untuk didownload."); return; }
-            let excelData = logs.map((log, index) => {
+        async function downloadExcel() {
+            let sourceLogs = logs;
+            try {
+                const snap = await db.collection("forklift_logs").orderBy("created_at", "desc").get();
+                sourceLogs = [];
+                snap.forEach((doc) => sourceLogs.push({ id: doc.id, ...doc.data() }));
+            } catch (e) {
+                console.warn("Menggunakan data logs yang sudah dimuat:", e);
+            }
+
+            if (sourceLogs.length === 0) { alert("Tidak ada data untuk didownload."); return; }
+            let excelData = sourceLogs.map((log, index) => {
                 return {
                     "No": index + 1, "Waktu Input": log.waktu_input, "Nama Operator": log.operator,
                     "No Timesheet": log.no_timesheet || '-', "Alat": log.alat, "Mulai Kerja": log.mulai,
@@ -1224,7 +1239,7 @@
             XLSX.writeFile(workbook, "Laporan_Log_Karyawan.xlsx");
         }
 
-        function downloadExcelPerUser() {
+        async function downloadExcelPerUser() {
             const selectedUser = document.getElementById("inputSearchUser").value.trim();
             const tglMulaiAwal = document.getElementById("filter_tgl_mulai_awal").value;
             const tglMulaiAkhir = document.getElementById("filter_tgl_mulai_akhir").value;
@@ -1234,7 +1249,17 @@
                 return;
             }
 
-            // Tentukan rentang tanggal
+            let userLogsAll = [];
+            try {
+                const snap = await db.collection("forklift_logs")
+                    .where("operator", "==", selectedUser)
+                    .get();
+                snap.forEach((doc) => userLogsAll.push({ id: doc.id, ...doc.data() }));
+            } catch (e) {
+                console.warn("Fallback ke array logs lokal:", e);
+                userLogsAll = logs.filter(log => log.operator && log.operator.toLowerCase() === selectedUser.toLowerCase());
+            }
+
             let dateAwal, dateAkhir;
             
             if (tglMulaiAwal && tglMulaiAkhir) {
@@ -1244,9 +1269,8 @@
                 let minTime = Date.now();
                 let maxTime = Date.now();
                 
-                const userLogs = logs.filter(log => log.operator && log.operator.toLowerCase() === selectedUser.toLowerCase());
-                if (userLogs.length > 0) {
-                    userLogs.forEach(log => {
+                if (userLogsAll.length > 0) {
+                    userLogsAll.forEach(log => {
                         let t = log.created_at || new Date(log.mulai).getTime();
                         if (t < minTime) minTime = t;
                         if (t > maxTime) maxTime = t;
@@ -1264,11 +1288,7 @@
                 }
             }
 
-            // Filter log timesheet user terpilih dalam rentang waktu
-            const filteredLogs = logs.filter(log => {
-                const matchUser = log.operator && log.operator.toLowerCase() === selectedUser.toLowerCase();
-                if (!matchUser) return false;
-
+            const filteredLogs = userLogsAll.filter(log => {
                 if (!log.mulai) return false;
                 const parts = log.mulai.split(" ");
                 const dParts = parts[0].split("/");
@@ -1278,7 +1298,6 @@
                 return true;
             });
 
-            // Helper untuk konversi tanggal ke format "16-Okt-26"
             function formatTanggalCustom(dateObj) {
                 const day = String(dateObj.getDate()).padStart(2, '0');
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
@@ -1306,7 +1325,6 @@
                 rekapMap[dateKey].push(log);
             });
 
-            // GENERATE FULL KALENDER (HARI PER HARI DARI TANGGAL AWAL SAMPAI AKHIR) - TANPA KOLOM NAMA OPERATOR
             const excelRows = [
                 { "No": `NAMA : ${selectedUser}`, "TANGGAL": "", "No Timesheet": "", "Alat": "", "Mulai Kerja": "", "Selesai Kerja": "", "Durasi": "", "Keterangan": "", "Status SPV 1": "", "Catatan SPV 1": "", "Status SPV 2": "", "Catatan SPV 2": "", "Status SPV 3": "", "Catatan SPV 3": "" },
                 { "No": "No", "TANGGAL": "TANGGAL", "No Timesheet": "No Timesheet", "Alat": "Alat", "Mulai Kerja": "Mulai Kerja", "Selesai Kerja": "Selesai Kerja", "Durasi": "Durasi", "Keterangan": "Keterangan", "Status SPV 1": "Status SPV 1", "Catatan SPV 1": "Catatan SPV 1", "Status SPV 2": "Status SPV 2", "Catatan SPV 2": "Catatan SPV 2", "Status SPV 3": "Status SPV 3", "Catatan SPV 3": "Catatan SPV 3" }
@@ -1347,7 +1365,6 @@
                         });
                     });
                 } else {
-                    // Tanggal merah / libur / tidak ada timesheet dimuat dengan kalender berurutan, data kerja kosong, dan keterangan kosong
                     excelRows.push({
                         "No": rowCounter++,
                         "TANGGAL": tglFormatted,
@@ -1377,7 +1394,7 @@
             XLSX.writeFile(workbook, `Laporan_Timesheet_FullKalender_${safeName}.xlsx`);
         }
 
-        function downloadExcelPresensiUser() {
+        async function downloadExcelPresensiUser() {
             const selectedUser = document.getElementById("inputSearchUser").value.trim();
             const tglMulaiAwal = document.getElementById("filter_tgl_mulai_awal").value;
             const tglMulaiAkhir = document.getElementById("filter_tgl_mulai_akhir").value;
@@ -1387,7 +1404,18 @@
                 return;
             }
 
-            // Tentukan rentang tanggal
+            let userPresensiAll = [];
+            try {
+                const snap = await db.collection("presensi_logs")
+                    .where("nama", "==", selectedUser)
+                    .get();
+                snap.forEach((doc) => userPresensiAll.push({ id: doc.id, ...doc.data() }));
+            } catch (e) {
+                console.error("Gagal mengambil data presensi user:", e);
+                alert("Gagal memuat data presensi dari database.");
+                return;
+            }
+
             let dateAwal, dateAkhir;
             
             if (tglMulaiAwal && tglMulaiAkhir) {
@@ -1397,9 +1425,8 @@
                 let minTime = Date.now();
                 let maxTime = Date.now();
                 
-                const userPresensi = presensiLogs.filter(log => log.nama && log.nama.toLowerCase() === selectedUser.toLowerCase());
-                if (userPresensi.length > 0) {
-                    userPresensi.forEach(log => {
+                if (userPresensiAll.length > 0) {
+                    userPresensiAll.forEach(log => {
                         let t = log.created_at || new Date(log.waktu).getTime();
                         if (t < minTime) minTime = t;
                         if (t > maxTime) maxTime = t;
@@ -1417,11 +1444,7 @@
                 }
             }
 
-            // Filter log presensi user terpilih dalam rentang waktu
-            const filteredPresensi = presensiLogs.filter(log => {
-                const matchUser = log.nama && log.nama.toLowerCase() === selectedUser.toLowerCase();
-                if (!matchUser) return false;
-
+            const filteredPresensi = userPresensiAll.filter(log => {
                 let logDate = null;
                 if (log.created_at) {
                     logDate = new Date(log.created_at);
@@ -1439,7 +1462,6 @@
                 return true;
             });
 
-            // Helper untuk konversi tanggal ke format "16-Okt-26"
             function formatTanggalCustom(dateObj) {
                 const day = String(dateObj.getDate()).padStart(2, '0');
                 const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"];
@@ -1448,7 +1470,6 @@
                 return `${day}-${mth}-${yr}`;
             }
 
-            // Masukkan data presensi ke dalam map berdasarkan key tanggal "YYYY-MM-DD"
             const rekapMap = {};
             filteredPresensi.forEach(log => {
                 let dObj = null;
@@ -1494,7 +1515,6 @@
                 }
             });
 
-            // GENERATE FULL KALENDER (HARI PER HARI DARI TANGGAL AWAL SAMPAI AKHIR)
             const excelRows = [
                 { "TANGGAL": `NAMA : ${selectedUser}`, "JAM MASUK": "", "JAM KELUAR": "", "LOKASI": "", "KETERANGAN": "" },
                 { "TANGGAL": "TANGGAL", "JAM MASUK": "JAM MASUK", "JAM KELUAR": "JAM KELUAR", "LOKASI": "LOKASI", "KETERANGAN": "KETERANGAN" }
@@ -1522,7 +1542,6 @@
                         "KETERANGAN": ""
                     });
                 } else {
-                    // Tanggal merah / libur / tidak absen dimuat dengan jam kosong & keterangan kosong
                     excelRows.push({
                         "TANGGAL": tglFormatted,
                         "JAM MASUK": "-",
